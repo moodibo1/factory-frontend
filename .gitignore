@@ -1,0 +1,24 @@
+# =========================
+# Frontend (React / Vite)
+# =========================
+node_modules/
+dist/
+dist-ssr/
+build/
+.eslintcache
+npm-debug.log*
+
+# =========================
+# Ignore Backend Folder completely
+# =========================
+backend/
+
+# =========================
+# Environment Variables & OS Files
+# =========================
+.env
+.env.local
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store

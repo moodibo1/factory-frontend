@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="ar">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Security Headers -->
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta name="referrer" content="no-referrer" />
+    
+    <!-- Prevent caching of sensitive data -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    
+    <!-- Disable screenshot/screen capture APIs -->
+    <meta name="screen-capture" content="none" />
+    
+    <title>نظام المصنع الوطني</title>
+    
+    <style>
+      /* Prevent screenshot on page load */
+      html {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+      
+      /* Security warning overlay */
+      #security-warning {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(220, 38, 38, 0.98);
+        color: white;
+        padding: 40px 60px;
+        border-radius: 20px;
+        z-index: 999999;
+        text-align: center;
+        font-size: 24px;
+        font-weight: bold;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      }
+      
+      #security-warning.show {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="security-warning">
+      <div>⚠️ تحذير أمني ⚠️</div>
+      <div style="font-size: 18px; margin-top: 20px;">محاولة التقاط الشاشة مرفوضة</div>
+      <div style="font-size: 14px; margin-top: 10px; opacity: 0.9;">تم تسجيل هذا النشاط</div>
+    </div>
+    
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- Immediate security - runs before React loads -->
+    <script>
+      (function() {
+        'use strict';
+        
+        let warningTimeout;
+        let isAdmin = false;
+        
+        // Check if user is admin
+        function checkAdminStatus() {
+          try {
+            const token = localStorage.getItem('token');
+            if (token) {
+              const payload = JSON.parse(atob(token.split('.')[1]));
+              // You can add logic to decode user role from token if needed
+              // For now, we'll check it dynamically when user logs in
+            }
+          } catch (e) {}
+        }
+        
+        // Store admin check function globally so React can call it
+        window.setAdminStatus = function(adminStatus) {
+          isAdmin = adminStatus;
+        };
+        
+        function showWarning() {
+          if (isAdmin) return; // Don't show warnings for admins
+          
+          const warning = document.getElementById('security-warning');
+          if (warning) {
+            warning.classList.add('show');
+            clearTimeout(warningTimeout);
+            warningTimeout = setTimeout(() => {
+              warning.classList.remove('show');
+            }, 3000);
+          }
+        }
+        
+        // Block right-click immediately (only for non-admins)
+        document.addEventListener('contextmenu', function(e) {
+          if (isAdmin) return; // Allow for admins
+          
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          showWarning();
+          return false;
+        }, true);
+        
+        // Block keyboard shortcuts immediately (only for non-admins)
+        document.addEventListener('keydown', function(e) {
+          if (isAdmin) return; // Allow for admins
+          
+          const key = e.key ? e.key.toLowerCase() : '';
+          const keyCode = e.keyCode || e.which;
+          const ctrl = e.ctrlKey || e.metaKey;
+          const shift = e.shiftKey;
+          
+          // F12
+          if (keyCode === 123) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            showWarning();
+            return false;
+          }
+          
+          // PrintScreen
+          if (keyCode === 44 || key === 'printscreen') {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            navigator.clipboard.writeText('').catch(() => {});
+            showWarning();
+            return false;
+          }
+          
+          // Ctrl+Shift+I (DevTools)
+          if (ctrl && shift && (key === 'i' || keyCode === 73)) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            showWarning();
+            return false;
+          }
+          
+          // Ctrl+Shift+J (Console)
+          if (ctrl && shift && (key === 'j' || keyCode === 74)) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            showWarning();
+            return false;
+          }
+          
+          // Ctrl+Shift+C (Inspect)
+          if (ctrl && shift && (key === 'c' || keyCode === 67)) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            showWarning();
+            return false;
+          }
+          
+          // Ctrl+P (Print) - allow for admins, block for users
+          if (ctrl && (key === 'p' || keyCode === 80)) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            showWarning();
+            return false;
+          }
+          
+          // Ctrl+S (Save)
+          if (ctrl && (key === 's' || keyCode === 83)) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            return false;
+          }
+          
+          // Ctrl+U (View Source)
+          if (ctrl && (key === 'u' || keyCode === 85)) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            return false;
+          }
+        }, true);
+        
+        // PrintScreen keyup detection (only for non-admins)
+        document.addEventListener('keyup', function(e) {
+          if (isAdmin) return;
+          
+          if (e.keyCode === 44 || (e.key && e.key.toLowerCase() === 'printscreen')) {
+            navigator.clipboard.writeText('').catch(() => {});
+            showWarning();
+          }
+        }, true);
+        
+        // Blur content when switching tabs (only for non-admins)
+        document.addEventListener('visibilitychange', function() {
+          if (isAdmin) return;
+          
+          if (document.hidden) {
+            document.body.style.filter = 'blur(10px)';
+          } else {
+            setTimeout(() => {
+              document.body.style.filter = '';
+            }, 200);
+          }
+        });
+        
+        // Blur content when window loses focus (only for non-admins)
+        window.addEventListener('blur', function() {
+          if (isAdmin) return;
+          
+          setTimeout(() => {
+            document.body.style.filter = 'blur(10px)';
+          }, 100);
+        });
+        
+        window.addEventListener('focus', function() {
+          if (isAdmin) return;
+          
+          setTimeout(() => {
+            document.body.style.filter = '';
+          }, 200);
+        });
+        
+        // Disable console in production
+        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+          console.log = console.warn = console.error = console.info = console.debug = function() {};
+        }
+        
+        // Detect screen recording/capture
+        if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+          const originalGetDisplayMedia = navigator.mediaDevices.getDisplayMedia;
+          navigator.mediaDevices.getDisplayMedia = function() {
+            if (!isAdmin) showWarning();
+            return Promise.reject(new Error('Screen recording is not allowed'));
+          };
+        }
+        
+        // Periodic clipboard clearing (anti-PrintScreen) - only for non-admins
+        setInterval(function() {
+          if (isAdmin) return;
+          
+          try {
+            navigator.clipboard.writeText('').catch(() => {});
+          } catch(e) {}
+        }, 500);
+        
+        // Block common screenshot extensions/iframes
+        document.addEventListener('DOMContentLoaded', function() {
+          const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+              mutation.addedNodes.forEach(function(node) {
+                if (node.tagName === 'IFRAME' || node.tagName === 'EMBED' || node.tagName === 'OBJECT') {
+                  node.remove();
+                }
+              });
+            });
+          });
+          observer.observe(document.body, { childList: true, subtree: true });
+        });
+        
+        checkAdminStatus();
+      })();
+    </script>
+  </body>
+</html>
