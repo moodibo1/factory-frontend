@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { useAuth } from '@/store/AuthContext'
+import { useTranslation } from 'react-i18next'
 
 export default function SecurityProtection() {
   const { user } = useAuth()
+  const { t } = useTranslation()
   const [showWarning, setShowWarning] = useState(false)
 
   useEffect(() => {
@@ -230,16 +232,17 @@ export default function SecurityProtection() {
       {/* Screenshot warning overlay */}
       {showWarning && (
         <div className="screenshot-warning active">
-          <div>⚠️ تحذير أمني ⚠️</div>
+          <div>⚠️ {t('security_warning')} ⚠️</div>
           <div style={{ fontSize: '18px', marginTop: '20px' }}>
-            محاولة التقاط الشاشة مرفوضة
+            {t('screenshot_denied')}
           </div>
           <div style={{ fontSize: '14px', marginTop: '10px', opacity: 0.9 }}>
-            تم تسجيل هذا النشاط
+            {t('activity_logged')}
           </div>
         </div>
       )}
     </>
   )
 }
+
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { dashboardService, issuesService } from '@/services/api'
 import { AlertTriangle, CheckCircle, Clock, TrendingUp, Download, Printer, Sparkles, Copy, Check, Calendar, X, ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -12,7 +12,7 @@ const COLORS = ['#ef4444', '#f97316', '#eab308']
 
 export default function DashboardPage() {
   const navigate = useNavigate()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [stats, setStats] = useState(null)
   const [recentIssues, setRecentIssues] = useState([])
   const [loading, setLoading] = useState(true)
@@ -55,7 +55,7 @@ export default function DashboardPage() {
       setStartDate('')
       setEndDate('')
     } catch {
-      alert('فشل التصدير')
+      alert(t('loading_failed'))
     } finally {
       setExporting(false)
     }
@@ -68,7 +68,7 @@ export default function DashboardPage() {
       const data = await dashboardService.getAiReport(promptValue)
       setAiReport(data.report)
     } catch {
-      setAiReport('فشل توليد التقرير. تأكد من صحة الـ API Key.')
+      setAiReport(t('ai_report_failed'))
     } finally {
       setAiLoading(false)
     }
@@ -86,7 +86,7 @@ export default function DashboardPage() {
     </div>
   )
 
-  if (!stats) return <p className="text-center py-10 text-muted-foreground">تعذر تحميل البيانات</p>
+  if (!stats) return <p className="text-center py-10 text-muted-foreground">{t('loading_failed')}</p>
 
   const kpis = [
     { label: t('total_records'), value: stats.total, icon: TrendingUp, color: 'text-blue-500', bg: 'bg-blue-500/10' },
@@ -104,8 +104,9 @@ export default function DashboardPage() {
   const pieData = [
     { name: t('critical'), value: stats.emergency },
     { name: t('main'), value: stats.open - stats.emergency },
-    { name: t('secondary'), value: stats.total - stats.open },
   ].filter(d => d.value > 0)
+
+  const dir = i18n.language === 'ar' ? 'rtl' : 'ltr'
 
   return (
     <div className="flex flex-col gap-6 py-4 pb-24">
@@ -143,12 +144,12 @@ export default function DashboardPage() {
 
       <div className="border rounded-2xl p-4 flex flex-col gap-3">
         <h2 className="font-semibold text-sm text-muted-foreground">{t('issues_by_department')}</h2>
-        <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={barData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+        <ResponsiveContainer width="100%" height={180}>
+          <BarChart data={barData}>
             <XAxis dataKey="name" tick={{ fontSize: 12 }} />
             <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
             <Tooltip />
-            <Bar dataKey="count" fill="#8b5cf6" radius={[6, 6, 0, 0]} name={t('records') || "سجلات"} />
+            <Bar dataKey="count" fill="#8b5cf6" radius={[6, 6, 0, 0]} name={t('count')} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -175,7 +176,7 @@ export default function DashboardPage() {
             <div key={issue.id} className="flex items-center justify-between text-sm py-2 border-b last:border-0">
               <span className="font-medium truncate max-w-[60%]">{issue.title}</span>
               <span className={`text-xs px-2 py-0.5 rounded-full ${issue.status === 'open' ? 'bg-blue-500/20 text-blue-500' : 'bg-gray-500/20 text-gray-400'}`}>
-                {t(issue.status === 'in_progress' ? 'in_progress' : issue.status)}
+                {t(issue.status)}
               </span>
             </div>
           ))}
@@ -186,18 +187,18 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles size={20} className="text-purple-500" />
-            <h2 className="font-bold">{t('smart_reports_tool')}</h2>
+            <h2 className="font-bold">{t('ai_smart_report')}</h2>
           </div>
           {aiReport && (
             <button onClick={handleCopy} className="text-xs flex items-center gap-1 text-muted-foreground hover:text-foreground transition">
               {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
-              {copied ? t('success') : t('copy')}
+              {copied ? t('copied') : t('copy')}
             </button>
           )}
         </div>
 
         <div className="flex flex-col gap-3">
-          <p className="text-xs text-muted-foreground font-semibold">{t('generate_quick_report')}</p>
+          <p className="text-xs text-muted-foreground font-semibold">{t('generate_report')}</p>
           <div className="flex gap-2 flex-wrap">
             <button
               onClick={() => handleAiReport('')}
@@ -207,7 +208,7 @@ export default function DashboardPage() {
               📊 {t('current_factory_status')}
             </button>
             <button
-              onClick={() => handleAiReport(t('monthly_performance'))}
+              onClick={() => handleAiReport(t('monthly_performance_prompt'))}
               disabled={aiLoading}
               className="text-xs px-3 py-2 bg-purple-500/10 text-purple-600 rounded-xl border border-purple-500/20 hover:bg-purple-600 hover:text-white transition disabled:opacity-50"
             >
@@ -221,7 +222,7 @@ export default function DashboardPage() {
             value={customPrompt}
             onChange={(e) => setCustomPrompt(e.target.value)}
             disabled={aiLoading}
-            placeholder={t('custom_query')}
+            placeholder={t('custom_report_prompt')}
             className="flex-1 bg-background border border-purple-500/20 rounded-xl px-3 py-2.5 text-xs outline-none focus:ring-2 ring-purple-500/40 placeholder:text-muted-foreground"
           />
           <button
@@ -229,14 +230,14 @@ export default function DashboardPage() {
             disabled={aiLoading || !customPrompt.trim()}
             className="bg-purple-600 text-white text-xs font-semibold px-4 py-2 rounded-xl hover:bg-purple-700 transition disabled:opacity-50"
           >
-            {t('query_button')}
+            {t('generate_ai_report')}
           </button>
         </form>
 
         {aiLoading && (
           <div className="flex flex-col items-center gap-3 py-6">
             <div className="w-8 h-8 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
-            <p className="text-sm text-muted-foreground">{t('loading')}</p>
+            <p className="text-sm text-muted-foreground">{t('generating')}</p>
           </div>
         )}
 
@@ -261,7 +262,7 @@ export default function DashboardPage() {
       {showExcelModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowExcelModal(false)} />
-          <div className="relative w-full max-w-sm bg-background border rounded-2xl shadow-xl flex flex-col overflow-hidden" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
+          <div className="relative w-full max-w-sm bg-background border rounded-2xl shadow-xl flex flex-col overflow-hidden" dir={dir}>
             <div className="flex items-center justify-between p-4 border-b bg-muted/30">
               <div className="flex items-center gap-2">
                 <Calendar size={18} className="text-primary" />
@@ -273,7 +274,7 @@ export default function DashboardPage() {
             </div>
             <form onSubmit={handleExport} className="p-4 flex flex-col gap-4">
               <div>
-                <label className="text-xs text-muted-foreground block mb-1">From Date</label>
+                <label className="text-xs text-muted-foreground block mb-1">{t('start_date')}</label>
                 <input
                   type="date"
                   value={startDate}
@@ -283,7 +284,7 @@ export default function DashboardPage() {
               </div>
 
               <div>
-                <label className="text-xs text-muted-foreground block mb-1">To Date</label>
+                <label className="text-xs text-muted-foreground block mb-1">{t('end_date')}</label>
                 <input
                   type="date"
                   value={endDate}
@@ -307,4 +308,3 @@ export default function DashboardPage() {
     </div>
   )
 }
-

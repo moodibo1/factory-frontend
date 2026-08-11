@@ -76,7 +76,7 @@ export default function AISearchBar() {
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Sparkles size={14} className="text-purple-500" />
-            {results.length > 0 ? `${t('search')} (${results.length})` : t('no_data')}
+            {results.length > 0 ? `${t('search')} (${results.length})` : t('no_results')}
           </div>
           {results.map((issue) => (
             <IssueCard key={issue.id} issue={issue} onUpdate={() => {}} />

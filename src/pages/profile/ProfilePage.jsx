@@ -40,7 +40,7 @@ export default function ProfilePage() {
           className="p-2 rounded-xl hover:bg-muted transition-colors"
           title={t('back')}
         >
-          <ArrowLeft size={20} />
+          <ArrowLeft size={20} className="rtl:rotate-0 ltr:rotate-180" />
         </button>
         <h1 className="text-2xl font-bold">{t('my_account')}</h1>
       </div>
@@ -64,16 +64,16 @@ export default function ProfilePage() {
       <div className="grid grid-cols-2 gap-3">
         <div className="border rounded-2xl p-4 flex flex-col items-center bg-card">
           <span className="text-2xl font-bold text-blue-500">{openIssuesCount}</span>
-          <span className="text-xs text-muted-foreground">سجلات مفتوحة للمتابعة</span>
+          <span className="text-xs text-muted-foreground">{t('open_tracking_records')}</span>
         </div>
         <div className="border rounded-2xl p-4 flex flex-col items-center bg-card">
           <span className="text-2xl font-bold text-gray-500">{closedIssuesCount}</span>
-          <span className="text-xs text-muted-foreground">سجلات تم إغلاقها</span>
+          <span className="text-xs text-muted-foreground">{t('closed_issues_records')}</span>
         </div>
       </div>
 
       <div className="flex flex-col gap-4">
-          <h2 className="font-bold border-b pb-2">سجل المشاكل</h2>
+          <h2 className="font-bold border-b pb-2">{t('issue_log')}</h2>
         {loading ? (
           <div className="flex flex-col gap-4">
             {[1, 2].map((i) => (
@@ -81,7 +81,7 @@ export default function ProfilePage() {
             ))}
           </div>
         ) : issues.length === 0 ? (
-          <p className="text-center text-muted-foreground py-10">لم تقم بإضافة أي سجلات بعد.</p>
+          <p className="text-center text-muted-foreground py-10">{t('no_issues_yet')}</p>
         ) : (
           issues.map((issue) => (
             <IssueCard key={issue.id} issue={issue} onUpdate={fetchMyIssues} />

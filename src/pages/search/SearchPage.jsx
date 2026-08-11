@@ -1,4 +1,4 @@
-import AISearchBar from '@/components/shared/AISearchBar'
+﻿import AISearchBar from '@/components/shared/AISearchBar'
 import { Sparkles, ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -16,7 +16,7 @@ export default function SearchPage() {
             className="p-2 rounded-xl hover:bg-muted transition-colors"
             title={t('back')}
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={20} className="rtl:rotate-0 ltr:rotate-180" />
           </button>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Sparkles size={22} className="text-purple-500" />
@@ -48,3 +48,4 @@ export default function SearchPage() {
     </div>
   )
 }
+

@@ -104,23 +104,23 @@ export default function ChannelPage() {
             className="p-2 rounded-xl hover:bg-muted transition-colors"
             title={t('back')}
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={20} className="rtl:rotate-0 ltr:rotate-180" />
           </button>
           <h1 className="text-xl font-bold">{categoryNames[id] || id}</h1>
         </div>
         <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
-          {filtered.length} سجل
+          {filtered.length} {t('records')}
         </span>
       </div>
 
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Search size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground rtl:right-3 rtl:left-auto ltr:left-3 ltr:right-auto" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="بحث..."
-            className="w-full bg-muted rounded-xl pr-9 pl-4 py-2.5 text-sm outline-none focus:ring-2 ring-primary"
+            placeholder={`${t('search')}...`}
+            className="w-full bg-muted rounded-xl pr-9 pl-4 py-2.5 text-sm outline-none focus:ring-2 ring-primary rtl:pr-9 rtl:pl-4 ltr:pl-9 ltr:pr-4"
           />
           {search && (
             <button onClick={() => setSearch('')} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -178,23 +178,23 @@ export default function ChannelPage() {
           <div className="w-full h-px bg-muted my-1" />
           <div>
             <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
-              <ArrowDownWideNarrow size={14} /> فرز حسب
+              <ArrowDownWideNarrow size={14} /> {t('sort')}
             </p>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
               className="w-full bg-muted border border-transparent rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 ring-primary transition cursor-pointer"
             >
-              <option value="date_desc">التاريخ (الأحدث أولاً)</option>
-              <option value="date_asc">التاريخ (الأقدم أولاً)</option>
-              <option value="type">النوع (الطارئ أولاً)</option>
-              <option value="alpha_asc">أبجدياً (أ - ي)</option>
-              <option value="alpha_desc">أبجدياً (ي - أ)</option>
+              <option value="date_desc">{t('sort_newest')}</option>
+              <option value="date_asc">{t('sort_oldest')}</option>
+              <option value="type">{t('sort_emergency')}</option>
+              <option value="alpha_asc">A - Z</option>
+              <option value="alpha_desc">Z - A</option>
             </select>
           </div>
           {hasFilters && (
-            <button onClick={() => { setType(''); setStatus('') }} className="text-xs text-destructive text-right mt-2">
-              مسح الفلاتر
+            <button onClick={() => { setType(''); setStatus('') }} className="text-xs text-destructive text-right mt-2 rtl:text-right ltr:text-left">
+              {t('clear_filters')}
             </button>
           )}
         </div>
@@ -209,7 +209,7 @@ export default function ChannelPage() {
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-16 text-muted-foreground">
           <Search size={36} strokeWidth={1.2} />
-          <p className="text-sm">لا توجد نتائج</p>
+          <p className="text-sm">{t('no_results')}</p>
         </div>
       ) : (
         filtered.map((issue) => (
@@ -225,17 +225,17 @@ export default function ChannelPage() {
             disabled={page === 1}
             className="px-3 py-1.5 rounded-lg border border-muted hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed text-sm"
           >
-            السابق
+            {t('previous')}
           </button>
           <span className="text-sm text-muted-foreground">
-            صفحة {page} من {Math.ceil(total / limit)}
+            {t('page', { current: page, total: Math.ceil(total / limit) })}
           </span>
           <button
             onClick={() => setPage(p => Math.min(Math.ceil(total / limit), p + 1))}
             disabled={page === Math.ceil(total / limit)}
             className="px-3 py-1.5 rounded-lg border border-muted hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed text-sm"
           >
-            التالي
+            {t('next')}
           </button>
         </div>
       )}
@@ -246,7 +246,7 @@ export default function ChannelPage() {
           className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-full shadow-lg hover:opacity-90 transition font-medium z-30"
         >
           <Plus size={20} />
-          إضافة
+          {t('add')}
         </button>
       )}
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { adminService, issuesService } from '@/services/api'
 import { useAuth } from '@/store/AuthContext'
 import { Trash2, ShieldCheck, ShieldOff, Users, AlertTriangle, Archive, UserCheck, Settings2, Crown, CheckCircle, XCircle, ArrowLeft } from 'lucide-react'
@@ -12,7 +12,7 @@ import ApproveUserModal from '@/components/shared/ApproveUserModal'
 export default function AdminPage() {
   const { user: currentUser } = useAuth()
   const navigate = useNavigate()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [tab, setTab] = useState('users')
   const [users, setUsers] = useState([])
   const [issues, setIssues] = useState([])
@@ -73,7 +73,7 @@ export default function AdminPage() {
   }
 
   const handleDeleteUser = async (userId) => {
-    if (!confirm('هل أنت متأكد من حذف هذا المستخدم؟')) return
+    if (!confirm(t('confirm_delete') || 'هل أنت متأكد من الحذف؟')) return
     setActionLoading(userId)
     try {
       await adminService.deleteUser(userId)
@@ -117,7 +117,7 @@ export default function AdminPage() {
           className="p-2 rounded-xl hover:bg-muted transition-colors"
           title={t('back')}
         >
-          <ArrowLeft size={20} />
+          <ArrowLeft size={20} className="rtl:rotate-0 ltr:rotate-180" />
         </button>
         <h1 className="text-2xl font-bold">{t('management')}</h1>
       </div>
@@ -157,7 +157,7 @@ export default function AdminPage() {
                 <div className="flex flex-col min-w-0">
                   <div className="flex items-center gap-1">
                     <span className="font-semibold text-sm truncate">{user.name}</span>
-                    {isMe && <span className="text-xs text-muted-foreground">(أنت)</span>}
+                    {isMe && <span className="text-xs text-muted-foreground">{t('you')}</span>}
                     {isAdmin && <Crown size={12} className="text-purple-500 shrink-0" />}
                   </div>
                   <span className="text-xs text-muted-foreground truncate">{user.email}</span>
@@ -171,7 +171,7 @@ export default function AdminPage() {
                       'text-[10px] px-2 py-0.5 rounded-full w-fit',
                       isAdmin ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-muted text-muted-foreground'
                     )}>
-                      {isAdmin ? 'مدير النظام' : 'مستخدم عادي'}
+                      {isAdmin ? t('system_admin') : t('normal_user')}
                     </span>
                   </div>
                 </div>
@@ -180,7 +180,7 @@ export default function AdminPage() {
                     onClick={() => setSelectedUser(user)}
                     disabled={busy}
                     className="p-2 rounded-xl text-blue-500 hover:bg-blue-500/10 transition disabled:opacity-40"
-                    title="تعديل الصلاحيات الدقيقة"
+                    title={t('permissions')}
                   >
                     <Settings2 size={17} />
                   </button>
@@ -193,7 +193,6 @@ export default function AdminPage() {
                           'p-2 rounded-xl transition disabled:opacity-40',
                           user.role === 'admin' ? 'text-purple-500 hover:bg-purple-500/20' : 'text-muted-foreground hover:bg-muted'
                         )}
-                        title={user.role === 'admin' ? 'إزالة صلاحيات المدير' : 'منح صلاحيات المدير'}
                       >
                         {user.role === 'admin' ? <ShieldOff size={17} /> : <ShieldCheck size={17} />}
                       </button>
@@ -201,7 +200,7 @@ export default function AdminPage() {
                         onClick={() => handleDeleteUser(user.id)}
                         disabled={busy}
                         className="p-2 rounded-xl text-destructive hover:bg-destructive/10 transition disabled:opacity-40"
-                        title="حذف المستخدم"
+                        title={t('delete')}
                       >
                         <Trash2 size={17} />
                       </button>
@@ -215,7 +214,7 @@ export default function AdminPage() {
       ) : tab === 'pending' ? (
         <div className="flex flex-col gap-3">
           {pendingUsers.length === 0 ? (
-            <p className="text-center text-muted-foreground py-10 text-sm">لا توجد طلبات انضمام معلقة</p>
+            <p className="text-center text-muted-foreground py-10 text-sm">{t('no_data')}</p>
           ) : (
             pendingUsers.map(user => {
               const busy = actionLoading === user.id
@@ -225,11 +224,11 @@ export default function AdminPage() {
                     <span className="font-semibold text-sm truncate">{user.name}</span>
                     <span className="text-xs text-muted-foreground truncate">{user.email}</span>
                   </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <button onClick={() => setApprovingUser(user)} disabled={busy} className="p-2 text-green-600 hover:bg-green-600/10 rounded-xl transition disabled:opacity-50" title="موافقة">
-                        <CheckCircle size={20} />
-                      </button>
-                    <button onClick={() => handleReject(user.id)} disabled={busy} className="p-2 text-destructive hover:bg-destructive/10 rounded-xl transition disabled:opacity-50" title="رفض">
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button onClick={() => setApprovingUser(user)} disabled={busy} className="p-2 text-green-600 hover:bg-green-600/10 rounded-xl transition disabled:opacity-50" title={t('approve')}>
+                      <CheckCircle size={20} />
+                    </button>
+                    <button onClick={() => handleReject(user.id)} disabled={busy} className="p-2 text-destructive hover:bg-destructive/10 rounded-xl transition disabled:opacity-50" title={t('reject')}>
                       <XCircle size={20} />
                     </button>
                   </div>
@@ -241,7 +240,7 @@ export default function AdminPage() {
       ) : tab === 'issues' ? (
         <div className="flex flex-col gap-3">
           {issues.filter(issue => issue.status === 'closed').length === 0 ? (
-            <p className="text-center text-muted-foreground py-10">لا توجد سجلات مغلقة حالياً.</p>
+            <p className="text-center text-muted-foreground py-10">{t('no_data')}</p>
           ) : (
             issues
               .filter(issue => issue.status === 'closed')
@@ -253,7 +252,7 @@ export default function AdminPage() {
       ) : (
         <div className="flex flex-col gap-3">
           {archivedIssues.length === 0 ? (
-            <p className="text-center text-muted-foreground py-10">السجلات المؤرشفة فارغة.</p>
+            <p className="text-center text-muted-foreground py-10">{t('no_data')}</p>
           ) : (
             archivedIssues.map((issue) => (
               <IssueCard key={issue.id} issue={issue} onUpdate={loadData} />
@@ -280,4 +279,3 @@ export default function AdminPage() {
     </div>
   )
 }
-

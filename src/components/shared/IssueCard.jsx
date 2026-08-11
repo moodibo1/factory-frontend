@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { clsx } from 'clsx'
 import { ImageOff, MessageCircle, Send, ChevronRight, Trash2, Archive, ZoomIn, X, Printer } from 'lucide-react'
 import { issuesService, adminService } from '@/services/api'
@@ -34,7 +34,7 @@ export default function IssueCard({ issue, onUpdate }) {
     try { return JSON.parse(user?.permissions || '{}') }
     catch { return { can_delete: false } }
   })()
-
+  
   const canDelete = isAdmin || (userPerms.can_delete && issue.creator_id === user?.id)
 
   const typeInfo = typeMap[issue.type] || typeMap.problem
@@ -44,12 +44,6 @@ export default function IssueCard({ issue, onUpdate }) {
     ? issue.media_url.startsWith('http') ? issue.media_url : `${BASE_URL}${issue.media_url}`
     : null
 
-  // Debug: Check issue data
-  console.log('Issue data:', issue)
-  console.log('media_type:', issue.media_type)
-  console.log('media_url:', issue.media_url)
-  console.log('mediaUrl:', mediaUrl)
-
   const handlePrint = () => {
     // Create a clean print view
     const printWindow = window.open('', '_blank')
@@ -58,8 +52,7 @@ export default function IssueCard({ issue, onUpdate }) {
       <html dir="rtl" lang="ar">
       <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>طباعة - ${issue.title}</title>
+        <title>${t('print')} - ${issue.title}</title>
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body {
@@ -69,63 +62,16 @@ export default function IssueCard({ issue, onUpdate }) {
             color: #000;
             direction: rtl;
           }
-          .header {
-            text-align: center;
-            border-bottom: 3px solid #2563eb;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-          }
-          .header h1 {
-            font-size: 28px;
-            color: #1e40af;
-            margin-bottom: 5px;
-          }
-          .header p {
-            color: #64748b;
-            font-size: 14px;
-          }
-          .issue-container {
-            background: #f8fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 30px;
-            margin-bottom: 20px;
-          }
-          .issue-title {
-            font-size: 24px;
-            font-weight: bold;
-            color: #1e293b;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #cbd5e1;
-          }
-          .meta-info {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
-          }
-          .meta-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-          }
-          .meta-label {
-            font-weight: bold;
-            color: #475569;
-            font-size: 14px;
-          }
-          .meta-value {
-            color: #1e293b;
-            font-size: 14px;
-          }
-          .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-          }
+          .header { text-align: center; border-bottom: 3px solid #2563eb; padding-bottom: 20px; margin-bottom: 30px; }
+          .header h1 { font-size: 28px; color: #1e40af; margin-bottom: 5px; }
+          .header p { color: #64748b; font-size: 14px; }
+          .issue-container { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 30px; margin-bottom: 20px; }
+          .issue-title { font-size: 24px; font-weight: bold; color: #1e293b; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #cbd5e1; }
+          .meta-info { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+          .meta-item { display: flex; align-items: center; gap: 8px; }
+          .meta-label { font-weight: bold; color: #475569; font-size: 14px; }
+          .meta-value { color: #1e293b; font-size: 14px; }
+          .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
           .badge-problem { background: #fed7aa; color: #c2410c; }
           .badge-note { background: #bfdbfe; color: #1e40af; }
           .badge-emergency { background: #fecaca; color: #991b1b; }
@@ -133,84 +79,18 @@ export default function IssueCard({ issue, onUpdate }) {
           .badge-progress { background: #fef3c7; color: #92400e; }
           .badge-closed { background: #e2e8f0; color: #475569; }
           .badge-reopened { background: #e9d5ff; color: #6b21a8; }
-          .description-section {
-            margin-top: 20px;
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-          }
-          .description-section h3 {
-            font-size: 16px;
-            color: #475569;
-            margin-bottom: 10px;
-          }
-          .description-section p {
-            color: #1e293b;
-            line-height: 1.8;
-            font-size: 14px;
-            white-space: pre-wrap;
-          }
-          .image-section {
-            margin-top: 20px;
-            text-align: center;
-          }
-          .image-section img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            border: 2px solid #e2e8f0;
-          }
-          .comments-section {
-            margin-top: 30px;
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-          }
-          .comments-section h3 {
-            font-size: 18px;
-            color: #1e293b;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e2e8f0;
-          }
-          .comment {
-            padding: 12px;
-            background: #f8fafc;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            border-right: 3px solid #2563eb;
-          }
-          .comment-author {
-            font-weight: bold;
-            color: #1e40af;
-            font-size: 13px;
-            margin-bottom: 5px;
-          }
-          .comment-text {
-            color: #475569;
-            font-size: 13px;
-            line-height: 1.6;
-          }
-          .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 2px solid #e2e8f0;
-            text-align: center;
-            color: #64748b;
-            font-size: 12px;
-          }
-          @media print {
-            body { padding: 20px; }
-            .no-print { display: none; }
-          }
+          .description-section { margin-top: 20px; padding: 20px; background: white; border-radius: 8px; border: 1px solid #e2e8f0; }
+          .description-section p { white-space: pre-wrap; font-size: 14px; }
+          .image-section img { max-width: 100%; border-radius: 8px; margin-top: 20px; }
+          .comments-section { margin-top: 30px; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; }
+          .comment { padding: 12px; background: #f8fafc; border-radius: 6px; margin-bottom: 10px; border-right: 3px solid #2563eb; }
+          .comment-author { font-weight: bold; color: #1e40af; font-size: 13px; margin-bottom: 5px; }
+          .footer { text-align: center; font-size: 12px; color: #64748b; margin-top: 40px; border-top: 2px solid #e2e8f0; padding-top: 20px; }
         </style>
       </head>
       <body>
         <div class="header">
-          <h1>🏭 المصنع الوطني</h1>
-          <p>نظام إدارة المشاكل والبلاغات</p>
+          <h1>${t('app_name')}</h1>
         </div>
         
         <div class="issue-container">
@@ -218,43 +98,34 @@ export default function IssueCard({ issue, onUpdate }) {
           
           <div class="meta-info">
             <div class="meta-item">
-              <span class="meta-label">النوع:</span>
+              <span class="meta-label">${t('report_type')}:</span>
               <span class="badge badge-${issue.type}">${typeInfo.label}</span>
             </div>
             <div class="meta-item">
-              <span class="meta-label">الحالة:</span>
+              <span class="meta-label">Status:</span>
               <span class="badge badge-${issue.status}">${status.label}</span>
-            </div>
-            <div class="meta-item">
-              <span class="meta-label">التاريخ:</span>
-              <span class="meta-value">${new Date(issue.created_at).toLocaleDateString('ar-SA')}</span>
-            </div>
-            <div class="meta-item">
-              <span class="meta-label">الموظف:</span>
-              <span class="meta-value">${issue.creator?.name || 'غير معروف'}</span>
             </div>
           </div>
           
           ${issue.description ? `
           <div class="description-section">
-            <h3>الوصف:</h3>
             <p>${issue.description}</p>
           </div>
           ` : ''}
           
           ${issue.media_type === 'image' && mediaUrl ? `
           <div class="image-section">
-            <img src="${mediaUrl}" alt="صورة المشكلة" />
+            <img src="${mediaUrl}" alt="Attachment" />
           </div>
           ` : ''}
         </div>
         
         ${comments.length > 0 ? `
         <div class="comments-section">
-          <h3>التعليقات (${comments.length})</h3>
+          <h3>${t('comments')} (${comments.length})</h3>
           ${comments.map(c => `
             <div class="comment">
-              <div class="comment-author">${c.author?.name || 'مجهول'}</div>
+              <div class="comment-author">${c.author?.name || t('unknown')}</div>
               <div class="comment-text">${c.text}</div>
             </div>
           `).join('')}
@@ -262,21 +133,15 @@ export default function IssueCard({ issue, onUpdate }) {
         ` : ''}
         
         <div class="footer">
-          <p>تم الطباعة بتاريخ: ${new Date().toLocaleString('ar-SA')}</p>
-          <p>المصنع الوطني © ${new Date().getFullYear()}</p>
+          <p>${new Date().toLocaleString()}</p>
         </div>
         
         <script>
-          window.onload = function() {
-            setTimeout(() => {
-              window.print();
-            }, 500);
-          };
+          setTimeout(() => window.print(), 500);
         </script>
       </body>
       </html>
     `
-    
     printWindow.document.write(printContent)
     printWindow.document.close()
   }
@@ -306,7 +171,6 @@ export default function IssueCard({ issue, onUpdate }) {
   }
 
   const handleArchive = async () => {
-    if (!confirm('هل تريد أرشفة هذا السجل؟')) return
     try {
       await adminService.archiveIssue(issue.id)
       onUpdate()
@@ -316,7 +180,7 @@ export default function IssueCard({ issue, onUpdate }) {
   }
 
   const handleDelete = async () => {
-    if (!confirm(t('confirm_delete') || 'هل أنت متأكد من حذف هذا السجل نهائياً؟')) return
+    if (!confirm(t('confirm_delete') || 'هل أنت متأكد من الحذف؟')) return
     try {
       await adminService.deleteIssue(issue.id)
       onUpdate()
@@ -335,8 +199,8 @@ export default function IssueCard({ issue, onUpdate }) {
     <div className="border rounded-2xl overflow-hidden bg-background shadow-sm flex flex-col">
       {issue.media_type === 'image' && mediaUrl ? (
         <>
-          <div className="relative cursor-pointer group" onClick={handleImageClick}>
-            <img src={mediaUrl} alt="صورة المشكلة" className="w-full h-52 object-cover" />
+          <div className="relative group cursor-pointer" onClick={handleImageClick}>
+            <img src={mediaUrl} alt={t('media_attachment')} className="w-full h-52 object-cover" />
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
               <ZoomIn size={32} className="text-white" />
             </div>
@@ -347,7 +211,7 @@ export default function IssueCard({ issue, onUpdate }) {
                 <button onClick={() => setShowImage(false)} className="absolute -top-10 right-0 text-white hover:text-gray-300">
                   <X size={24} />
                 </button>
-                <img src={mediaUrl} alt="صورة المشكلة" className="max-w-full max-h-[80vh] object-contain rounded-lg" />
+                <img src={mediaUrl} alt={t('media_attachment')} className="max-w-full max-h-[80vh] object-contain rounded-lg" />
               </div>
             </div>
           )}
@@ -373,7 +237,6 @@ export default function IssueCard({ issue, onUpdate }) {
             
             {isAdmin && (
               <>
-                {/* Print button - visible only to admins */}
                 <button
                   onClick={handlePrint}
                   className="text-muted-foreground hover:text-primary transition p-1"
@@ -419,7 +282,7 @@ export default function IssueCard({ issue, onUpdate }) {
 
         <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t">
           <span>{issue.creator?.name || t('unknown')}</span>
-          <span>{new Date(issue.created_at).toLocaleDateString('ar-IQ')}</span>
+          <span>{new Date(issue.created_at).toLocaleDateString()}</span>
         </div>
 
         <button
@@ -434,7 +297,7 @@ export default function IssueCard({ issue, onUpdate }) {
           <div className="flex flex-col gap-2 pt-2 border-t">
             {comments.map((c) => (
               <div key={c.id} className="bg-muted rounded-xl px-3 py-2 text-sm">
-                <span className="font-medium">{c.author?.name}: </span>
+                <span className="font-medium">{c.author?.name || t('unknown')}: </span>
                 <span className="text-muted-foreground">{c.text}</span>
               </div>
             ))}
@@ -455,4 +318,3 @@ export default function IssueCard({ issue, onUpdate }) {
     </div>
   )
 }
-

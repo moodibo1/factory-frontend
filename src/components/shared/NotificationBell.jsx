@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+﻿import { useState, useEffect, useRef } from 'react'
 import { Bell, X, CheckCheck, Sparkles, AlertTriangle, Clock, Bot, MessageCircle, CheckCircle } from 'lucide-react'
 import { notificationsService } from '@/services/api'
 import { useAuth } from '@/store/AuthContext'
@@ -27,23 +27,11 @@ export default function NotificationBell() {
     const mins = Math.floor(diff / 60000)
     const hours = Math.floor(diff / 3600000)
     const days = Math.floor(diff / 86400000)
-    
-    if (i18n.language === 'en') {
-      if (days > 0) return `${days} days ago`
-      if (hours > 0) return `${hours} hours ago`
-      if (mins > 0) return `${mins} minutes ago`
-      return 'Just now'
-    } else if (i18n.language === 'tr') {
-      if (days > 0) return `${days} gün önce`
-      if (hours > 0) return `${hours} saat önce`
-      if (mins > 0) return `${mins} dakika önce`
-      return 'Şimdi'
-    } else {
-      if (days > 0) return `منذ ${days} يوم`
-      if (hours > 0) return `منذ ${hours} ساعة`
-      if (mins > 0) return `منذ ${mins} دقيقة`
-      return 'الآن'
-    }
+
+    if (days > 0) return t('days_ago', { count: days })
+    if (hours > 0) return t('hours_ago', { count: hours })
+    if (mins > 0) return t('minutes_ago', { count: mins })
+    return t('just_now')
   }
 
   const fetchAll = async () => {
@@ -128,7 +116,7 @@ export default function NotificationBell() {
                 {unread > 0 && (
                   <button onClick={handleMarkAllRead} className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition">
                     <CheckCheck size={14} />
-                    {t('all') || 'قراءة الكل'}
+                    {t('mark_all_read')}
                   </button>
                 )}
                 {isAdmin && (
@@ -151,7 +139,7 @@ export default function NotificationBell() {
               {notifications.length === 0 ? (
                 <div className="flex flex-col items-center gap-2 py-10 text-muted-foreground">
                   <Bell size={28} strokeWidth={1.2} />
-                  <p className="text-sm">{t('no_data')}</p>
+                  <p className="text-sm">{t('no_notifications')}</p>
                 </div>
               ) : (
                 notifications.map((notif) => {
@@ -193,3 +181,4 @@ export default function NotificationBell() {
     </>
   )
 }
+

@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Outlet } from 'react-router-dom'
 import Navbar from '@/components/shared/Navbar'
 import SecurityProtection from '@/components/shared/SecurityProtection'
@@ -5,7 +6,14 @@ import { useTranslation } from 'react-i18next'
 
 export default function AppLayout() {
   const { i18n } = useTranslation()
-  const isRTL = i18n.language === 'ar' || i18n.language.startsWith('ar')
+  const lang = i18n.language?.substring(0, 2) || 'ar'
+  const isRTL = lang === 'ar'
+
+  // Keep the <html> element in sync whenever language changes
+  useEffect(() => {
+    document.documentElement.dir = isRTL ? 'rtl' : 'ltr'
+    document.documentElement.lang = lang
+  }, [lang, isRTL])
 
   return (
     <div className="min-h-screen bg-background text-foreground" dir={isRTL ? 'rtl' : 'ltr'}>

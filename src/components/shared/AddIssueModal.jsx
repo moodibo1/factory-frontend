@@ -54,7 +54,7 @@ export default function AddIssueModal({ onClose, onSuccess }) {
 
     // Validate file type
     if (!ALLOWED_TYPES.includes(f.type)) {
-      setError('نوع الملف غير مسموح. يُسمح فقط بـ JPG, PNG, WEBP, MP4, MOV')
+      setError(t('file_type_error'))
       e.target.value = ''
       return
     }
@@ -62,12 +62,12 @@ export default function AddIssueModal({ onClose, onSuccess }) {
     // Validate file size
     const isVideo = f.type.startsWith('video')
     if (isVideo && f.size > MAX_VIDEO_SIZE) {
-      setError('حجم الفيديو كبير جداً. الحد الأقصى هو 50MB')
+      setError(t('file_size_video_error'))
       e.target.value = ''
       return
     }
     if (!isVideo && f.size > MAX_IMAGE_SIZE) {
-      setError('حجم الصورة كبير جداً. الحد الأقصى هو 10MB')
+      setError(t('file_size_image_error'))
       e.target.value = ''
       return
     }
