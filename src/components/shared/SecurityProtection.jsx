@@ -153,7 +153,8 @@ export default function SecurityProtection() {
     // Log security violations to backend
     const logSecurityViolation = async (type) => {
       try {
-        await fetch('http://localhost:8000/security/log', {
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+        await fetch(`${baseUrl}/security/log`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

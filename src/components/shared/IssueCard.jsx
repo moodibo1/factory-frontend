@@ -5,7 +5,7 @@ import { issuesService, adminService } from '@/services/api'
 import { useAuth } from '@/store/AuthContext'
 import { useTranslation } from 'react-i18next'
 
-const BASE_URL = 'http://localhost:8000'
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 export default function IssueCard({ issue, onUpdate }) {
   const { user } = useAuth()
