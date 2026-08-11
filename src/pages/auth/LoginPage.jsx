@@ -184,10 +184,10 @@ export default function LoginPage() {
             </>
           ) : (
             <form onSubmit={handleVerify} className="flex flex-col gap-3">
-              <h2 className="font-bold text-center mb-2">تأكيد البريد الإلكتروني</h2>
+              <h2 className="font-bold text-center mb-2">{t('verify_email')}</h2>
               <input 
                 type="text" 
-                placeholder="رمز التحقق" 
+                placeholder={t('enter_code')} 
                 value={verifyCode} 
                 onChange={(e) => setVerifyCode(e.target.value)} 
                 required 
