@@ -132,6 +132,15 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
+  const verifyEmail = useCallback(async (email, code) => {
+    try {
+      return await authService.verifyEmail(email, code)
+    } catch (error) {
+      console.error('Email verification failed:', error)
+      throw error
+    }
+  }, [])
+
   /**
    * Send Supabase password reset email
    */
@@ -248,11 +257,12 @@ export function AuthProvider({ children }) {
       loading,
       login,
       register,
+      verifyEmail,
       forgotPassword,
       logout,
       isAuthenticated: !!user,
     }),
-    [user, loading, login, register, forgotPassword, logout]
+    [user, loading, login, register, verifyEmail, forgotPassword, logout]
   )
 
   return (
