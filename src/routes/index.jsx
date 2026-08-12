@@ -3,6 +3,7 @@ import AppLayout from '@/layouts/AppLayout'
 import ProtectedRoute from '@/components/shared/ProtectedRoute'
 import AdminRoute from '@/components/shared/AdminRoute'
 import LoginPage from '@/pages/auth/LoginPage'
+import AuthCallback from '@/pages/auth/AuthCallback'
 import HomePage from '@/pages/home/HomePage'
 import DashboardPage from '@/pages/dashboard/DashboardPage'
 import ChannelPage from '@/pages/channel/ChannelPage'
@@ -12,6 +13,7 @@ import SearchPage from '@/pages/search/SearchPage'
 
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
+  { path: '/auth/callback', element: <AuthCallback /> },
   {
     element: <ProtectedRoute />,
     children: [

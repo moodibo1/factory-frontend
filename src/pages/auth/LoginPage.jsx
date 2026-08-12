@@ -5,11 +5,10 @@ import { Eye, Factory, KeyRound, X, Check, EyeOff, Globe } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 export default function LoginPage() {
-  const { login, register, verifyEmail, forgotPassword } = useAuth()
+  const { login, register, forgotPassword } = useAuth()
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
   const [isLogin, setIsLogin] = useState(true)
-  const [step, setStep] = useState('auth') // 'auth' | 'verify'
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -17,7 +16,6 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
-  const [verifyCode, setVerifyCode] = useState('')
   const [showForgot, setShowForgot] = useState(false)
   const [forgotEmail, setForgotEmail] = useState('')
   const [forgotError, setForgotError] = useState('')
@@ -41,32 +39,14 @@ export default function LoginPage() {
         navigate('/')
       } else {
         await register(name, email, password)
-        setStep('verify')
         setError(t('msg_verification_sent'))
       }
     } catch (err) {
       const msg = err.message || ''
       if (msg.includes('PENDING')) setError(t('msg_account_pending'))
       else if (msg.includes('REJECTED')) setError(t('msg_account_rejected'))
-      else if (msg.includes('Invalid credentials')) setError(t('msg_invalid_credentials'))
+      else if (msg.includes('Invalid credentials') || msg.includes('Invalid login')) setError(t('msg_invalid_credentials'))
       else setError(msg)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleVerify = async (e) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-    try {
-      await verifyEmail(email, verifyCode)
-      setStep('auth')
-      setIsLogin(true)
-      setVerifyCode('')
-      setError(t('msg_account_confirmed'))
-    } catch (err) {
-      setError(err.message || t('msg_invalid_code'))
     } finally {
       setLoading(false)
     }
@@ -107,67 +87,44 @@ export default function LoginPage() {
         </div>
 
         <div className="border rounded-2xl p-6 flex flex-col gap-4 bg-card shadow-sm">
-          {step === 'auth' ? (
-            <>
-              <div className="flex rounded-xl overflow-hidden border">
-                <button onClick={() => { setIsLogin(true); setError('') }} className={`flex-1 py-2 text-sm font-medium transition ${isLogin ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'}`}>{t('login_title')}</button>
-                <button onClick={() => { setIsLogin(false); setError('') }} className={`flex-1 py-2 text-sm font-medium transition ${!isLogin ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'}`}>{t('register')}</button>
-              </div>
+          <div className="flex rounded-xl overflow-hidden border">
+            <button onClick={() => { setIsLogin(true); setError('') }} className={`flex-1 py-2 text-sm font-medium transition ${isLogin ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'}`}>{t('login_title')}</button>
+            <button onClick={() => { setIsLogin(false); setError('') }} className={`flex-1 py-2 text-sm font-medium transition ${!isLogin ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'}`}>{t('register')}</button>
+          </div>
 
-              <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-                {!isLogin && (
-                  <input type="text" placeholder={t('full_name')} value={name} onChange={(e) => setName(e.target.value)} required className="w-full bg-muted rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-primary" />
-                )}
-                <input type="email" placeholder={t('email')} value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full bg-muted rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-primary" />
-                <div className="relative">
-                  <input type={showPass ? 'text' : 'password'} placeholder={t('password')} value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full bg-muted rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-primary rtl:pl-10 ltr:pr-10" />
-                  <button type="button" onClick={() => setShowPass(v => !v)} className="absolute rtl:left-3 ltr:right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                    {showPass ? <EyeOff size={17} /> : <Eye size={17} />}
-                  </button>
-                </div>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+            {!isLogin && (
+              <input type="text" placeholder={t('full_name')} value={name} onChange={(e) => setName(e.target.value)} required className="w-full bg-muted rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-primary" />
+            )}
+            <input type="email" placeholder={t('email')} value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full bg-muted rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-primary" />
+            <div className="relative">
+              <input type={showPass ? 'text' : 'password'} placeholder={t('password')} value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full bg-muted rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-primary rtl:pl-10 ltr:pr-10" />
+              <button type="button" onClick={() => setShowPass(v => !v)} className="absolute rtl:left-3 ltr:right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                {showPass ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
+            </div>
 
-                {isLogin && (
-                  <div className="flex items-center justify-between mt-1">
-                    <label className="flex items-center gap-2 cursor-pointer group">
-                      <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${rememberMe ? 'bg-primary border-primary' : 'border-muted-foreground group-hover:border-primary'}`}>
-                        {rememberMe && <Check size={12} className="text-white" />}
-                      </div>
-                      <input type="checkbox" checked={rememberMe} onChange={() => setRememberMe(!rememberMe)} className="hidden" />
-                      <span className="text-xs text-muted-foreground select-none">{t('remember_me')}</span>
-                    </label>
-                    <button type="button" onClick={() => { setShowForgot(true); setForgotSuccess('') }} className="text-xs text-primary hover:underline">
-                      {t('forgot_password')}
-                    </button>
+            {isLogin && (
+              <div className="flex items-center justify-between mt-1">
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${rememberMe ? 'bg-primary border-primary' : 'border-muted-foreground group-hover:border-primary'}`}>
+                    {rememberMe && <Check size={12} className="text-white" />}
                   </div>
-                )}
-
-                {error && <p className={`text-sm text-center ${error.includes('✅') || error.includes('إرسال') ? 'text-green-500' : 'text-destructive'}`}>{error}</p>}
-
-                <button type="submit" disabled={loading} className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50 mt-1">
-                  {loading ? t('loading') : isLogin ? t('login') : t('register')}
+                  <input type="checkbox" checked={rememberMe} onChange={() => setRememberMe(!rememberMe)} className="hidden" />
+                  <span className="text-xs text-muted-foreground select-none">{t('remember_me')}</span>
+                </label>
+                <button type="button" onClick={() => { setShowForgot(true); setForgotSuccess('') }} className="text-xs text-primary hover:underline">
+                  {t('forgot_password')}
                 </button>
-              </form>
-            </>
-          ) : (
-            <form onSubmit={handleVerify} className="flex flex-col gap-3">
-              <h2 className="font-bold text-center mb-2">{t('verify_email')}</h2>
-              <input
-                type="text"
-                placeholder={t('enter_code')}
-                value={verifyCode}
-                onChange={(e) => setVerifyCode(e.target.value)}
-                required
-                className="w-full bg-muted rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-primary text-center font-mono tracking-widest"
-              />
-              {error && <p className={`text-sm text-center ${error.includes('✅') || error.includes('إرسال') ? 'text-green-500' : 'text-destructive'}`}>{error}</p>}
-              <button type="submit" disabled={loading} className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50 mt-1">
-                {loading ? t('loading') : 'تأكيد الحساب'}
-              </button>
-              <button type="button" onClick={() => { setStep('auth'); setIsLogin(true); setError('') }} className="text-sm text-muted-foreground hover:text-foreground mt-2">
-                {t('back')}
-              </button>
-            </form>
-          )}
+              </div>
+            )}
+
+            {error && <p className={`text-sm text-center ${error.includes('✅') || error.includes('إرسال') || error.includes('تحقق') ? 'text-green-500' : 'text-destructive'}`}>{error}</p>}
+
+            <button type="submit" disabled={loading} className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50 mt-1">
+              {loading ? t('loading') : isLogin ? t('login') : t('register')}
+            </button>
+          </form>
         </div>
       </div>
 
@@ -183,7 +140,6 @@ export default function LoginPage() {
                 </div>
                 <button onClick={() => setShowForgot(false)} className="text-muted-foreground hover:text-foreground"><X size={18} /></button>
               </div>
-
               {forgotSuccess ? (
                 <p className="text-sm text-green-500 bg-green-500/10 p-3 rounded-xl">{forgotSuccess}</p>
               ) : (

@@ -1,7 +1,15 @@
+import { supabase } from '@/lib/supabaseClient'
+
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
+async function getToken() {
+  if (!supabase) return null
+  const { data } = await supabase.auth.getSession()
+  return data.session?.access_token ?? null
+}
+
 export async function apiRequest(endpoint, options = {}) {
-  const token = localStorage.getItem('token')
+  const token = await getToken()
   const headers = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -17,34 +25,10 @@ export async function apiRequest(endpoint, options = {}) {
 }
 
 export const authService = {
-  async login(email, password) {
-    const form = new URLSearchParams()
-    form.append('username', email)
-    form.append('password', password)
-    const res = await fetch(`${BASE_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: form,
-    })
-    if (!res.ok) {
-      const error = await res.json().catch(() => ({ detail: 'Unknown error' }))
-      // Pass the raw detail string as error message so LoginPage can catch PENDING / REJECTED / UNVERIFIED
-      throw new Error(error.detail || 'بيانات الدخول غير صحيحة')
-    }
-    return res.json()
-  },
-
-  async register(name, email, password) {
+  async register(name, email) {
     return apiRequest('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ name, email, password }),
-    })
-  },
-
-  async verifyEmail(email, code) {
-    return apiRequest('/auth/verify-email', {
-      method: 'POST',
-      body: JSON.stringify({ email, code }),
+      body: JSON.stringify({ name, email }),
     })
   },
 }
@@ -67,7 +51,7 @@ export const issuesService = {
   },
 
   async create(formData) {
-    const token = localStorage.getItem('token')
+    const token = await getToken()
     const res = await fetch(`${BASE_URL}/issues/`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
@@ -106,12 +90,12 @@ export const dashboardService = {
   },
 
   async exportReport(startDate, endDate) {
-    const token = localStorage.getItem('token')
+    const token = await getToken()
     const params = new URLSearchParams()
     if (startDate) params.append('start_date', startDate)
     if (endDate) params.append('end_date', endDate)
     const q = params.toString() ? `?${params.toString()}` : ''
-    
+
     const res = await fetch(`${BASE_URL}/dashboard/export${q}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
