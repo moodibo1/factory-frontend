@@ -367,7 +367,7 @@ const resources = {
       enter_email_for_recovery: 'Enter your email and we will send you a recovery code.',
 
       // Auth messages
-      msg_verification_sent: 'A verification code has been sent to your email. Please enter it below.',
+      msg_verification_sent: 'A confirmation link has been sent to your email. Please click it to verify your account.',
       msg_account_pending: 'Your account is under review. Await admin approval.',
       msg_account_rejected: 'Your join request has been rejected.',
       msg_invalid_credentials: 'Invalid login credentials.',

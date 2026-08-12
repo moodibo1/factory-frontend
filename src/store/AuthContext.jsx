@@ -100,7 +100,7 @@ export function AuthProvider({ children }) {
 
   const register = useCallback(async (name, email, password) => {
     if (!supabase) throw new Error('Supabase is not configured.')
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -108,6 +108,7 @@ export function AuthProvider({ children }) {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     })
+    console.log('Supabase signUp response:', { data, error })
     if (error) throw new Error(error.message)
   }, [])
 
