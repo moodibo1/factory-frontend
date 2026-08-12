@@ -40,12 +40,6 @@ export const authService = {
       body: JSON.stringify({ name, email, password }),
     })
   },
-  async verifyEmail(email, code) {
-    return apiRequest('/auth/verify-email', {
-      method: 'POST',
-      body: JSON.stringify({ email, code }),
-    })
-  },
 }
 
 export const issuesService = {

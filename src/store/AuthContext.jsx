@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
 import { authService, apiRequest } from '@/services/api'
+import { supabase } from '@/lib/supabaseClient'
 
 // Constants
 const SESSION_TIMEOUT = 30 * 60 * 1000 // 30 minutes in milliseconds
@@ -132,15 +133,13 @@ export function AuthProvider({ children }) {
   }, [])
 
   /**
-   * Verify email with code
+   * Send Supabase password reset email
    */
-  const verifyEmail = useCallback(async (email, code) => {
-    try {
-      return await authService.verifyEmail(email, code)
-    } catch (error) {
-      console.error('Email verification failed:', error)
-      throw error
-    }
+  const forgotPassword = useCallback(async (email) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+    if (error) throw new Error(error.message)
   }, [])
 
   /**
@@ -248,11 +247,11 @@ export function AuthProvider({ children }) {
       loading,
       login,
       register,
-      verifyEmail,
+      forgotPassword,
       logout,
       isAuthenticated: !!user,
     }),
-    [user, loading, login, register, verifyEmail, logout]
+    [user, loading, login, register, forgotPassword, logout]
   )
 
   return (
