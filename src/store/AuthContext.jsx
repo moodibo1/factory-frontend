@@ -136,6 +136,7 @@ export function AuthProvider({ children }) {
    * Send Supabase password reset email
    */
   const forgotPassword = useCallback(async (email) => {
+    if (!supabase) throw new Error('Password reset is not configured.')
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     })
