@@ -39,11 +39,16 @@ export default function LoginPage() {
         navigate('/')
       } else {
         await register(name, email, password)
-        setError(t('msg_verification_sent'))
+        // Hard reset form after success inside registration
+        setIsLogin(true)
+        setEmail('')
+        setPassword('')
+        // Display toast / success to user
+        setError('حسابك قيد الانتظار لموافقة الأدمن')
       }
     } catch (err) {
       const msg = err.message || ''
-      if (msg.includes('PENDING')) setError(t('msg_account_pending'))
+      if (msg.includes('PENDING')) setError('حسابك قيد الانتظار لموافقة الأدمن')
       else if (msg.includes('REJECTED')) setError(t('msg_account_rejected'))
       else if (msg.includes('Invalid credentials') || msg.includes('Invalid login')) setError(t('msg_invalid_credentials'))
       else setError(msg)
@@ -88,8 +93,8 @@ export default function LoginPage() {
 
         <div className="border rounded-2xl p-6 flex flex-col gap-4 bg-card shadow-sm">
           <div className="flex rounded-xl overflow-hidden border">
-            <button onClick={() => { setIsLogin(true); setError('') }} className={`flex-1 py-2 text-sm font-medium transition ${isLogin ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'}`}>{t('login_title')}</button>
-            <button onClick={() => { setIsLogin(false); setError('') }} className={`flex-1 py-2 text-sm font-medium transition ${!isLogin ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'}`}>{t('register')}</button>
+            <button type="button" onClick={() => { setIsLogin(true); setError('') }} className={`flex-1 py-2 text-sm font-medium transition ${isLogin ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'}`}>{t('login_title')}</button>
+            <button type="button" onClick={() => { setIsLogin(false); setError('') }} className={`flex-1 py-2 text-sm font-medium transition ${!isLogin ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'}`}>{t('register')}</button>
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -119,7 +124,7 @@ export default function LoginPage() {
               </div>
             )}
 
-            {error && <p className={`text-sm text-center ${error.includes('✅') || error.includes('إرسال') || error.includes('تحقق') ? 'text-green-500' : 'text-destructive'}`}>{error}</p>}
+            {error && <p className={`text-sm text-center ${error.includes('✅') || error.includes('إرسال') || error.includes('تحقق') || error.includes('انتظار') ? 'text-green-500' : 'text-destructive'}`}>{error}</p>}
 
             <button type="submit" disabled={loading} className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50 mt-1">
               {loading ? t('loading') : isLogin ? t('login') : t('register')}
@@ -138,7 +143,7 @@ export default function LoginPage() {
                   <KeyRound size={20} className="text-primary" />
                   <h2 className="font-bold">{t('forgot_password')}</h2>
                 </div>
-                <button onClick={() => setShowForgot(false)} className="text-muted-foreground hover:text-foreground"><X size={18} /></button>
+                <button type="button" onClick={() => setShowForgot(false)} className="text-muted-foreground hover:text-foreground"><X size={18} /></button>
               </div>
               {forgotSuccess ? (
                 <p className="text-sm text-green-500 bg-green-500/10 p-3 rounded-xl">{forgotSuccess}</p>

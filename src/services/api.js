@@ -1,15 +1,8 @@
-import { supabase } from '@/lib/supabaseClient'
-
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-
-async function getToken() {
-  if (!supabase) return null
-  const { data } = await supabase.auth.getSession()
-  return data.session?.access_token ?? null
-}
+// Remove supabase import entirely because we are going back to basic fetch
+const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '')
 
 export async function apiRequest(endpoint, options = {}) {
-  const token = await getToken()
+  const token = localStorage.getItem('token')
   const headers = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -25,10 +18,26 @@ export async function apiRequest(endpoint, options = {}) {
 }
 
 export const authService = {
-  async register(name, email) {
+  async login(email, password) {
+    const form = new URLSearchParams()
+    form.append('username', email)
+    form.append('password', password)
+    const res = await fetch(`${BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: form,
+    })
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ detail: 'Unknown error' }))
+      throw new Error(error.detail || 'بيانات الدخول غير صحيحة')
+    }
+    return res.json()
+  },
+
+  async register(name, email, password) {
     return apiRequest('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ name, email }),
+      body: JSON.stringify({ name, email, password }),
     })
   },
 }
@@ -51,7 +60,7 @@ export const issuesService = {
   },
 
   async create(formData) {
-    const token = await getToken()
+    const token = localStorage.getItem('token')
     const res = await fetch(`${BASE_URL}/issues/`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
@@ -90,7 +99,7 @@ export const dashboardService = {
   },
 
   async exportReport(startDate, endDate) {
-    const token = await getToken()
+    const token = localStorage.getItem('token')
     const params = new URLSearchParams()
     if (startDate) params.append('start_date', startDate)
     if (endDate) params.append('end_date', endDate)

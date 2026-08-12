@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import { apiRequest } from '@/services/api'
+import { authService, apiRequest } from '@/services/api'
 
 // Constants
 const SESSION_TIMEOUT = 30 * 60 * 1000
@@ -10,6 +10,7 @@ const ACTIVITY_EVENTS = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'
 
 // Storage keys
 const STORAGE_KEYS = {
+  TOKEN: 'token',
   USER: 'user',
   REMEMBER_ME: 'rememberMe',
   LAST_ACTIVITY: LAST_ACTIVITY_KEY,
@@ -53,7 +54,6 @@ export function AuthProvider({ children }) {
     }
   }, [isSessionValid, clearSession])
 
-  // Load user profile from backend using Supabase session
   const loadUserProfile = useCallback(async () => {
     try {
       const profile = await apiRequest('/auth/me')
@@ -68,10 +68,8 @@ export function AuthProvider({ children }) {
   }, [clearSession, notifyAdminStatus])
 
   const login = useCallback(async (email, password, rememberMe = false) => {
-    if (!supabase) throw new Error('Supabase is not configured.')
-
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) throw new Error(error.message)
+    const data = await authService.login(email, password)
+    localStorage.setItem(STORAGE_KEYS.TOKEN, data.access_token)
 
     if (rememberMe) {
       localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, 'true')
@@ -82,34 +80,11 @@ export function AuthProvider({ children }) {
     }
 
     const profile = await loadUserProfile()
-
-    // Check admin approval gate
-    if (profile?.status === 'pending') {
-      await supabase.auth.signOut()
-      clearSession()
-      throw new Error('PENDING')
-    }
-    if (profile?.status === 'rejected') {
-      await supabase.auth.signOut()
-      clearSession()
-      throw new Error('REJECTED')
-    }
-
     return profile
-  }, [loadUserProfile, clearSession])
+  }, [loadUserProfile])
 
   const register = useCallback(async (name, email, password) => {
-    if (!supabase) throw new Error('Supabase is not configured.')
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { name },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    })
-    console.log('Supabase signUp response:', { data, error })
-    if (error) throw new Error(error.message)
+    await authService.register(name, email, password)
   }, [])
 
   const forgotPassword = useCallback(async (email) => {
@@ -120,31 +95,21 @@ export function AuthProvider({ children }) {
     if (error) throw new Error(error.message)
   }, [])
 
-  const logout = useCallback(async () => {
-    if (supabase) await supabase.auth.signOut()
+  const logout = useCallback(() => {
     clearSession()
     notifyAdminStatus(null)
   }, [clearSession, notifyAdminStatus])
 
-  // Bootstrap: restore session from Supabase on mount
+  // Bootstrap on mount
   useEffect(() => {
-    if (!supabase) {
-      setLoading(false)
-      return
-    }
+    const initAuth = async () => {
+      const token = localStorage.getItem(STORAGE_KEYS.TOKEN)
+      if (!token || !isSessionValid()) {
+        clearSession()
+        setLoading(false)
+        return
+      }
 
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (!data.session) {
-        clearSession()
-        setLoading(false)
-        return
-      }
-      if (!isSessionValid()) {
-        await supabase.auth.signOut()
-        clearSession()
-        setLoading(false)
-        return
-      }
       const storedUser = localStorage.getItem(STORAGE_KEYS.USER)
       if (storedUser) {
         try {
@@ -159,24 +124,21 @@ export function AuthProvider({ children }) {
         await loadUserProfile()
       }
       setLoading(false)
-    })
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        clearSession()
-      }
-    })
+    }
+    initAuth()
 
     const handleStorageChange = (e) => {
-      if (e.key === STORAGE_KEYS.USER) {
+      if (e.key === STORAGE_KEYS.TOKEN || e.key === STORAGE_KEYS.USER) {
+        const newToken = localStorage.getItem(STORAGE_KEYS.TOKEN)
         const newUser = localStorage.getItem(STORAGE_KEYS.USER)
-        if (!newUser) {
+        if (!newToken) {
           clearSession()
           window.location.href = '/login'
-        } else {
+        } else if (newUser) {
           try {
             const parsed = JSON.parse(newUser)
             setUser(parsed)
+            updateActivity()
             notifyAdminStatus(parsed.role)
           } catch { /* ignore */ }
         }
@@ -189,7 +151,6 @@ export function AuthProvider({ children }) {
     const sessionCheckInterval = setInterval(checkSessionAndRedirect, SESSION_CHECK_INTERVAL)
 
     return () => {
-      subscription.unsubscribe()
       window.removeEventListener('storage', handleStorageChange)
       ACTIVITY_EVENTS.forEach(event => document.removeEventListener(event, handleActivity))
       clearInterval(sessionCheckInterval)
