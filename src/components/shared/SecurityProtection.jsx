@@ -10,9 +10,6 @@ export default function SecurityProtection() {
   useEffect(() => {
     // Only apply security to non-admin users
     if (!user || user.role === 'admin') {
-      // Remove all security restrictions for admins
-      document.body.classList.remove('blurred-security')
-      document.body.style.filter = ''
       return
     }
 
@@ -96,30 +93,6 @@ export default function SecurityProtection() {
       }
     }
 
-    // Detect when user switches away from tab (screenshot attempt)
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        document.body.classList.add('blurred-security')
-      } else {
-        setTimeout(() => {
-          document.body.classList.remove('blurred-security')
-        }, 500)
-      }
-    }
-
-    // Detect when window loses focus
-    const handleBlur = () => {
-      setTimeout(() => {
-        document.body.classList.add('blurred-security')
-      }, 100)
-    }
-
-    const handleFocus = () => {
-      setTimeout(() => {
-        document.body.classList.remove('blurred-security')
-      }, 200)
-    }
-
     // Disable copy/paste
     const handleCopy = (e) => {
       e.preventDefault()
@@ -177,73 +150,64 @@ export default function SecurityProtection() {
     document.addEventListener('keyup', handleKeyUp, { capture: true })
     document.addEventListener('copy', handleCopy, { capture: true })
     document.addEventListener('cut', handleCut, { capture: true })
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    window.addEventListener('blur', handleBlur)
-    window.addEventListener('focus', handleFocus)
 
-    // Detect DevTools
+    // Detect DevTools (We log it, but disable screen blur)
     const detectDevTools = () => {
       const threshold = 160
       const widthDiff = window.outerWidth - window.innerWidth
       const heightDiff = window.outerHeight - window.innerHeight
-      
       if (widthDiff > threshold || heightDiff > threshold) {
         logSecurityViolation('devtools_open')
-        document.body.classList.add('blurred-security')
-      } else {
-        document.body.classList.remove('blurred-security')
       }
     }
+    
+    const devToolsInterval = setInterval(detectDevTools, 2000)
 
-    const devToolsInterval = setInterval(detectDevTools, 1000)
-
-    // Additional protection: monitor for screenshot hotkeys in different browsers
-    const monitorScreenshots = setInterval(() => {
-      // Clear clipboard periodically to prevent PrintScreen buffer
-      try {
-        navigator.clipboard.writeText('').catch(() => {})
-      } catch (e) {}
-    }, 500)
-
-    // Cleanup
+    // Cleanup when component unmounts
     return () => {
       document.removeEventListener('contextmenu', handleContextMenu, { capture: true })
       document.removeEventListener('keydown', handleKeyDown, { capture: true })
       document.removeEventListener('keyup', handleKeyUp, { capture: true })
       document.removeEventListener('copy', handleCopy, { capture: true })
       document.removeEventListener('cut', handleCut, { capture: true })
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-      window.removeEventListener('blur', handleBlur)
-      window.removeEventListener('focus', handleFocus)
       clearInterval(devToolsInterval)
-      clearInterval(monitorScreenshots)
-      document.body.classList.remove('blurred-security')
-      document.body.style.filter = ''
     }
   }, [user])
 
-  // Don't show watermark or warnings for admins
+  // Don't render watermark for admins
   if (!user || user.role === 'admin') return null
 
+  // Watermark text logic and robust overlay
   return (
     <>
-      {/* Watermark with user email - only for regular users */}
-      <div className="security-watermark" data-user={user.email} />
-      
-      {/* Screenshot warning overlay */}
+      {/* Heavy watermark layer - using inline style pointerEvents needed */}
+      <div 
+        className="fixed inset-0 overflow-hidden pointer-events-none z-[99999]"
+        style={{ pointerEvents: 'none', userSelect: 'none' }}
+      >
+        <div className="w-full h-full flex flex-wrap items-center justify-center opacity-20 dark:opacity-20 mix-blend-multiply dark:mix-blend-overlay">
+          {Array.from({ length: 24 }).map((_, i) => (
+            <div 
+              key={i} 
+              className="w-1/2 md:w-1/3 h-[15vh] flex items-center justify-center text-foreground font-black text-xl md:text-3xl rotate-[-25deg] pointer-events-none select-none text-center px-4"
+            >
+              {user.name}<br/>{user.email}
+            </div>
+          ))}
+        </div>
+      </div>
+
       {showWarning && (
-        <div className="screenshot-warning active">
-          <div>⚠️ {t('security_warning')} ⚠️</div>
-          <div style={{ fontSize: '18px', marginTop: '20px' }}>
-            {t('screenshot_denied')}
-          </div>
-          <div style={{ fontSize: '14px', marginTop: '10px', opacity: 0.9 }}>
-            {t('activity_logged')}
+        <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <div className="bg-destructive text-destructive-foreground p-8 rounded-2xl shadow-2xl flex flex-col items-center gap-4 text-center animate-in zoom-in duration-200">
+            <span className="text-5xl">⚠️</span>
+            <div>
+              <h2 className="text-2xl font-bold mb-2">تحذير أمني</h2>
+              <p className="opacity-90">{t('security_violation') || 'محاولة التقاط الشاشة أو النسخ غير مسموح بها. تم تسجيل هذا النشاط.'}</p>
+            </div>
           </div>
         </div>
       )}
     </>
   )
 }
-
-
