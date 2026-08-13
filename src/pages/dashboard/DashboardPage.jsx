@@ -109,7 +109,7 @@ export default function DashboardPage() {
   const dir = i18n.language === 'ar' ? 'rtl' : 'ltr'
 
   return (
-    <div className="flex flex-col gap-6 py-4 pb-24">
+    <div className="flex flex-col gap-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
@@ -142,30 +142,34 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <div className="border rounded-2xl p-4 flex flex-col gap-3">
+      <div className="border rounded-2xl p-4 flex flex-col gap-3 min-w-0 overflow-hidden">
         <h2 className="font-semibold text-sm text-muted-foreground">{t('issues_by_department')}</h2>
-        <ResponsiveContainer width="100%" height={180}>
-          <BarChart data={barData}>
-            <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-            <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-            <Tooltip />
-            <Bar dataKey="count" fill="#8b5cf6" radius={[6, 6, 0, 0]} name={t('count')} />
-          </BarChart>
-        </ResponsiveContainer>
+        <div className="w-full" style={{ height: 180 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={barData}>
+              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 12 }} width={30} />
+              <Tooltip />
+              <Bar dataKey="count" fill="#8b5cf6" radius={[6, 6, 0, 0]} name={t('count')} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       {pieData.length > 0 && (
-        <div className="border rounded-2xl p-4 flex flex-col gap-3">
+        <div className="border rounded-2xl p-4 flex flex-col gap-3 min-w-0 overflow-hidden">
           <h2 className="font-semibold text-sm text-muted-foreground">{t('severity_distribution')}</h2>
-          <ResponsiveContainer width="100%" height={220}>
-            <PieChart>
-              <Pie data={pieData} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={4} dataKey="value">
-                {pieData.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
-              </Pie>
-              <Legend />
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+          <div className="w-full" style={{ height: 220 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={pieData} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={4} dataKey="value">
+                  {pieData.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
+                </Pie>
+                <Legend />
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       )}
 

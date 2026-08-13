@@ -19,7 +19,10 @@ export default function AppLayout() {
     <div className="min-h-screen bg-background text-foreground" dir={isRTL ? 'rtl' : 'ltr'}>
       <SecurityProtection />
       <Navbar />
-      <main className="max-w-2xl mx-auto px-4 py-4 pb-24">
+      <main 
+        className="max-w-2xl w-full mx-auto px-4 py-4"
+        style={{ paddingBottom: 'max(6rem, env(safe-area-inset-bottom))' }}
+      >
         <Outlet />
       </main>
     </div>

@@ -277,8 +277,8 @@ export default function IssueCard({ issue, onUpdate }) {
           </div>
         </div>
 
-        <h2 className="font-bold text-base">{issue.title}</h2>
-        {issue.description && <p className="text-sm text-muted-foreground">{issue.description}</p>}
+        <h2 className="font-bold text-base break-words min-w-0">{issue.title}</h2>
+        {issue.description && <p className="text-sm text-muted-foreground break-words min-w-0 whitespace-pre-wrap">{issue.description}</p>}
 
         <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t">
           <span>{issue.creator?.name || t('unknown')}</span>
@@ -296,9 +296,9 @@ export default function IssueCard({ issue, onUpdate }) {
         {showComments && (
           <div className="flex flex-col gap-2 pt-2 border-t">
             {comments.map((c) => (
-              <div key={c.id} className="bg-muted rounded-xl px-3 py-2 text-sm">
+              <div key={c.id} className="bg-muted rounded-xl px-3 py-2 text-sm break-words min-w-0">
                 <span className="font-medium">{c.author?.name || t('unknown')}: </span>
-                <span className="text-muted-foreground">{c.text}</span>
+                <span className="text-muted-foreground whitespace-pre-wrap">{c.text}</span>
               </div>
             ))}
             <form onSubmit={handleComment} className="flex gap-2 mt-1">

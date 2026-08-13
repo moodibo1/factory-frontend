@@ -105,7 +105,10 @@ export default function AddIssueModal({ onClose, onSuccess }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center">
-      <div className="bg-background w-full max-w-2xl rounded-t-3xl p-6 flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
+      <div 
+        className="bg-background w-full max-w-2xl rounded-t-3xl p-6 flex flex-col gap-4 overflow-y-auto"
+        style={{ maxHeight: 'calc(100svh - 2rem)', paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
+      >
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">{t('add_new')}</h2>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground">

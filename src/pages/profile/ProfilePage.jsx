@@ -32,7 +32,7 @@ export default function ProfilePage() {
   const closedIssuesCount = issues.filter(i => i.status === 'closed').length
 
   return (
-    <div className="flex flex-col gap-6 py-4 pb-24">
+    <div className="flex flex-col gap-6 py-4">
       {/* Back button */}
       <div className="flex items-center gap-3">
         <button

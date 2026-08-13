@@ -29,7 +29,7 @@ export default function Navbar() {
     <Link
       key={to}
       to={to}
-      className={`flex items-center gap-1 text-sm transition ${pathname === to ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
+      className={`flex items-center gap-1.5 p-2 text-sm transition rounded-xl whitespace-nowrap ${pathname === to ? 'text-primary font-semibold bg-primary/5' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}
     >
       <Icon size={16} />
       {label}
