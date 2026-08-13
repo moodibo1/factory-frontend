@@ -243,8 +243,8 @@ export default function ChannelPage() {
       {userPerms.can_add && (
         <button
           onClick={() => setShowModal(true)}
-          className="fixed left-1/2 -translate-x-1/2 flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-full shadow-lg hover:opacity-90 transition font-medium z-30"
-          style={{ bottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
+          className="fixed left-1/2 -translate-x-1/2 flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:scale-105 active:scale-95 transition-all font-medium z-50 mb-[4.5rem] sm:mb-6"
+          style={{ bottom: 'env(safe-area-inset-bottom, 0px)' }}
         >
           <Plus size={20} />
           {t('add')}
