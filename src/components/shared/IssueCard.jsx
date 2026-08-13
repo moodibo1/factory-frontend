@@ -1,6 +1,6 @@
 ﻿import { useState } from 'react'
 import { clsx } from 'clsx'
-import { ImageOff, MessageCircle, Send, ChevronRight, Trash2, Archive, ZoomIn, X, Printer } from 'lucide-react'
+import { ImageOff, MessageCircle, Send, ChevronRight, Trash2, Archive, ZoomIn, X, Printer, Share2 } from 'lucide-react'
 import { issuesService, adminService } from '@/services/api'
 import { useAuth } from '@/store/AuthContext'
 import { useTranslation } from 'react-i18next'
@@ -16,6 +16,11 @@ export default function IssueCard({ issue, onUpdate }) {
   const [cycling, setCycling] = useState(false)
   const [showImage, setShowImage] = useState(false)
   const [imageError, setImageError] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
+  const [sharing, setSharing] = useState(false)
+
+  // Use the categories array to seed the share modal checkboxes
+  const [selectedCategories, setSelectedCategories] = useState(issue.categories || [issue.category])
 
   const typeMap = {
     problem: { label: t('problem'), class: 'bg-orange-500/20 text-orange-500 border-orange-500/30' },
@@ -196,6 +201,30 @@ export default function IssueCard({ issue, onUpdate }) {
     }
   }
 
+  const handleShareSubmit = async () => {
+    if (selectedCategories.length === 0) return
+    setSharing(true)
+    try {
+      await adminService.shareIssue(issue.id, selectedCategories)
+      setShowShareModal(false)
+      onUpdate()
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setSharing(false)
+    }
+  }
+
+  const toggleShareCategory = (cat) => {
+    if (selectedCategories.includes(cat)) {
+      if (selectedCategories.length > 1) {
+        setSelectedCategories(selectedCategories.filter(c => c !== cat))
+      }
+    } else {
+      setSelectedCategories([...selectedCategories, cat])
+    }
+  }
+
   return (
     <div className="border rounded-2xl overflow-hidden bg-background shadow-sm flex flex-col">
       {issue.media_type === 'image' && mediaUrl ? (
@@ -262,6 +291,14 @@ export default function IssueCard({ issue, onUpdate }) {
             
             {isAdmin && (
               <>
+                <button
+                  onClick={() => setShowShareModal(true)}
+                  className="text-muted-foreground hover:text-blue-500 transition p-1"
+                  title="مشاركة / تعديل الأقسام"
+                >
+                  <Share2 size={16} />
+                </button>
+
                 <button
                   onClick={handlePrint}
                   className="text-muted-foreground hover:text-primary transition p-1"
@@ -340,6 +377,47 @@ export default function IssueCard({ issue, onUpdate }) {
           </div>
         )}
       </div>
+
+      {showShareModal && (
+        <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-background w-full max-w-sm rounded-2xl p-6 flex flex-col gap-4">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h2 className="text-lg font-bold">مشاركة السجل</h2>
+              <button onClick={() => setShowShareModal(false)} className="text-muted-foreground hover:text-foreground">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <p className="text-sm text-muted-foreground">اختر الأقسام التي سيظهر فيها هذا السجل:</p>
+            
+            <div className="flex flex-col gap-2">
+              {[
+                { id: 'lab', label: t('labs') || 'المختبرات' },
+                { id: 'filling', label: t('filling') || 'التعبئة' },
+                { id: 'production', label: t('production') || 'الإنتاج' }
+              ].map(c => (
+                <label key={c.id} className="flex items-center gap-3 p-3 rounded-xl border border-input hover:bg-muted/50 transition cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={selectedCategories.includes(c.id)}
+                    onChange={() => toggleShareCategory(c.id)}
+                    className="w-4 h-4 rounded text-primary focus:ring-primary"
+                  />
+                  <span className="text-sm font-medium">{c.label}</span>
+                </label>
+              ))}
+            </div>
+
+            <button 
+              onClick={handleShareSubmit}
+              disabled={sharing || selectedCategories.length === 0}
+              className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50 mt-2"
+            >
+              {sharing ? t('loading') || 'جاري الحفظ...' : 'حفظ ونشر'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

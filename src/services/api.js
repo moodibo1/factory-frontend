@@ -183,10 +183,10 @@ export const adminService = {
   async archiveIssue(issueId) {
     return apiRequest(`/admin/issues/${issueId}/archive`, { method: 'PATCH' })
   },
-  async shareIssue(issueId, category) {
+  async shareIssue(issueId, categories) {
     return apiRequest(`/issues/${issueId}/share`, {
       method: 'POST',
-      body: JSON.stringify({ category })
+      body: JSON.stringify({ categories })
     })
   },
 }
