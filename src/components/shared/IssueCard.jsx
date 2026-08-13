@@ -15,6 +15,7 @@ export default function IssueCard({ issue, onUpdate }) {
   const [comments, setComments] = useState(issue.comments || [])
   const [cycling, setCycling] = useState(false)
   const [showImage, setShowImage] = useState(false)
+  const [imageError, setImageError] = useState(false)
 
   const typeMap = {
     problem: { label: t('problem'), class: 'bg-orange-500/20 text-orange-500 border-orange-500/30' },
@@ -198,26 +199,50 @@ export default function IssueCard({ issue, onUpdate }) {
   return (
     <div className="border rounded-2xl overflow-hidden bg-background shadow-sm flex flex-col">
       {issue.media_type === 'image' && mediaUrl ? (
-        <>
-          <div className="relative group cursor-pointer" onClick={handleImageClick}>
-            <img src={mediaUrl} alt={t('media_attachment')} className="w-full h-52 object-cover" />
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-              <ZoomIn size={32} className="text-white" />
-            </div>
+        imageError ? (
+          <div className="w-full h-52 bg-muted flex flex-col gap-2 items-center justify-center text-muted-foreground border-b border-dashed">
+            <ImageOff size={32} className="opacity-50" />
+            <span className="text-sm font-medium">{t('image_unavailable') || 'الصورة غير متوفرة'}</span>
           </div>
-          {showImage && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90" onClick={() => setShowImage(false)}>
-              <div className="relative max-w-4xl w-full max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
-                <button onClick={() => setShowImage(false)} className="absolute -top-10 right-0 text-white hover:text-gray-300">
-                  <X size={24} />
-                </button>
-                <img src={mediaUrl} alt={t('media_attachment')} className="max-w-full max-h-[80vh] object-contain rounded-lg" />
+        ) : (
+          <>
+            <div className="relative group cursor-pointer" onClick={handleImageClick}>
+              <img 
+                src={mediaUrl} 
+                alt={t('media_attachment')} 
+                className="w-full h-52 object-cover" 
+                onError={() => setImageError(true)}
+              />
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                <ZoomIn size={32} className="text-white" />
               </div>
             </div>
-          )}
-        </>
+            {showImage && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90" onClick={() => setShowImage(false)}>
+                <div className="relative max-w-4xl w-full max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+                  <button onClick={() => setShowImage(false)} className="absolute -top-10 right-0 text-white hover:text-gray-300">
+                    <X size={24} />
+                  </button>
+                  <img src={mediaUrl} alt={t('media_attachment')} className="max-w-full max-h-[80vh] object-contain rounded-lg" />
+                </div>
+              </div>
+            )}
+          </>
+        )
       ) : issue.media_type === 'video' && mediaUrl ? (
-        <video src={mediaUrl} controls className="w-full h-52 object-cover bg-black" />
+        imageError ? (
+          <div className="w-full h-52 bg-muted flex flex-col gap-2 items-center justify-center text-muted-foreground border-b border-dashed">
+            <ImageOff size={32} className="opacity-50" />
+            <span className="text-sm font-medium">{t('video_unavailable') || 'الفيديو غير متوفر'}</span>
+          </div>
+        ) : (
+          <video 
+            src={mediaUrl} 
+            controls 
+            className="w-full h-52 object-cover bg-black" 
+            onError={() => setImageError(true)}
+          />
+        )
       ) : (
         <div className="w-full h-28 bg-muted flex items-center justify-center text-muted-foreground">
           <ImageOff size={28} />
