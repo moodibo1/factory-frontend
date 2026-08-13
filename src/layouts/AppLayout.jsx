@@ -16,11 +16,11 @@ export default function AppLayout() {
   }, [lang, isRTL])
 
   return (
-    <div className="min-h-screen bg-background text-foreground" dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden flex flex-col" dir={isRTL ? 'rtl' : 'ltr'}>
       <SecurityProtection />
       <Navbar />
       <main 
-        className="max-w-2xl w-full mx-auto px-4 py-4"
+        className="flex-1 max-w-2xl w-full mx-auto px-4 py-4"
         style={{ paddingBottom: 'max(6rem, env(safe-area-inset-bottom))' }}
       >
         <Outlet />

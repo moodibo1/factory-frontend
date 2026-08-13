@@ -104,10 +104,10 @@ export default function AddIssueModal({ onClose, onSuccess }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center">
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
       <div 
-        className="bg-background w-full max-w-2xl rounded-t-3xl p-6 flex flex-col gap-4 overflow-y-auto"
-        style={{ maxHeight: 'calc(100svh - 2rem)', paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
+        className="bg-background w-full max-w-md rounded-2xl p-6 flex flex-col gap-4 overflow-y-auto"
+        style={{ maxHeight: 'calc(100svh - 2rem)' }}
       >
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold">{t('add_new')}</h2>
