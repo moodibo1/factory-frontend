@@ -185,13 +185,13 @@ export default function SecurityProtection() {
         className="fixed inset-0 overflow-hidden pointer-events-none z-[99999]"
         style={{ pointerEvents: 'none', userSelect: 'none' }}
       >
-        <div className="w-full h-full flex flex-wrap items-center justify-center opacity-20 dark:opacity-20 mix-blend-multiply dark:mix-blend-overlay">
-          {Array.from({ length: 24 }).map((_, i) => (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150vw] h-[150vh] flex flex-wrap items-center justify-center gap-16 md:gap-32 opacity-[0.03] dark:opacity-[0.04]">
+          {Array.from({ length: 36 }).map((_, i) => (
             <div 
               key={i} 
-              className="w-1/2 md:w-1/3 h-[15vh] flex items-center justify-center text-foreground font-black text-xl md:text-3xl rotate-[-25deg] pointer-events-none select-none text-center px-4"
+              className="text-foreground font-light text-base md:text-lg rotate-[-30deg] pointer-events-none select-none text-center whitespace-nowrap px-8"
             >
-              {user.name}<br/>{user.email}
+              {user.name} &bull; {user.email}
             </div>
           ))}
         </div>
