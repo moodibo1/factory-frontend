@@ -88,10 +88,14 @@ export default function AddIssueModal({ onClose, onSuccess }) {
       formData.append('title', title)
       formData.append('description', description)
       formData.append('type', type)
-      // Send the first selected category as the primary category
-      formData.append('category', selectedCategories[0])
-      // Send the full array of selected categories for cross-posting
-      formData.append('categories', JSON.stringify(selectedCategories))
+      
+      // Ensure we always have valid non-empty arrays
+      const catsToSubmit = selectedCategories.length > 0 ? selectedCategories : [defaultCategory]
+      formData.append('category', catsToSubmit[0])
+      formData.append('categories', JSON.stringify(catsToSubmit))
+      
+      console.log('Publishing payload:', { title, type, catsToSubmit })
+
       if (file) formData.append('file', file)
       await issuesService.create(formData)
       onSuccess()
