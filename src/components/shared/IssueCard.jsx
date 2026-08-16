@@ -7,6 +7,32 @@ import { useTranslation } from 'react-i18next'
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
+
+const formatFullDate = (dateStr) => {
+  if (!dateStr) return null
+  try {
+    const d = new Date(dateStr)
+    if (isNaN(d.getTime())) return null
+    return new Intl.DateTimeFormat('en-GB', {
+      day: 'numeric', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit', hour12: true
+    }).format(d)
+  } catch { return null }
+}
+
+const formatDuration = (fromStr, toStr) => {
+  if (!fromStr) return null
+  const from = new Date(fromStr).getTime()
+  const to = toStr ? new Date(toStr).getTime() : Date.now()
+  if (isNaN(from)) return null
+  const diffMs = Math.max(0, to - from)
+  const mins = Math.floor(diffMs / 60000)
+  if (mins < 60) return mins + 'm'
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return hrs + 'h ' + (mins % 60) + 'm'
+  const days = Math.floor(hrs / 24)
+  return days + 'd ' + (hrs % 24) + 'h'
+}
 export default function IssueCard({ issue, onUpdate, style }) {
   const { user } = useAuth()
   const { t } = useTranslation()
@@ -240,7 +266,31 @@ export default function IssueCard({ issue, onUpdate, style }) {
             </p>
           )}
 
-          {/* Footer */}
+                  {/* Status Timeline */}
+        {(issue.in_progress_at || issue.closed_at) && (
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-gray-400 pt-2">
+            <span className="flex items-center gap-1">
+              <Clock size={11} className="text-[#00A89B]" />
+              {t('opened_at')} {formatFullDate(issue.created_at)}
+            </span>
+            {issue.in_progress_at && (
+              <span className="flex items-center gap-1">
+                <span className="text-gray-300">&rarr;</span>
+                {t('moved_to_progress')} {formatFullDate(issue.in_progress_at)}
+                <span className="text-gray-300">({formatDuration(issue.created_at, issue.in_progress_at)})</span>
+              </span>
+            )}
+            {issue.closed_at && (
+              <span className="flex items-center gap-1">
+                <span className="text-gray-300">&rarr;</span>
+                {t('closed_at_label')} {formatFullDate(issue.closed_at)}
+                <span className="text-gray-300">({formatDuration(issue.in_progress_at || issue.created_at, issue.closed_at)})</span>
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Footer */}
           <div className="flex items-center justify-between pt-3 border-t border-gray-50">
             <div className="flex items-center gap-3">
               {/* Creator */}
@@ -249,7 +299,7 @@ export default function IssueCard({ issue, onUpdate, style }) {
               </span>
               {/* Date */}
               <span className="text-xs text-gray-300">
-                {new Date(issue.created_at).toLocaleDateString()}
+                {formatFullDate(issue.created_at)}
               </span>
             </div>
 
@@ -297,7 +347,7 @@ export default function IssueCard({ issue, onUpdate, style }) {
                     <div key={c.id || i} className="bg-gray-50/80 rounded-xl px-3 py-2 text-xs leading-relaxed">
                       <span className="font-semibold text-gray-700">{c.author?.name || t('unknown')}</span>
                       <span className="mx-1.5 text-gray-300">·</span>
-                      <span className="text-gray-400">{c.created_at ? new Date(c.created_at).toLocaleDateString() : ''}</span>
+                      <span className="text-gray-400">{formatFullDate(c.created_at) || ''}</span>
                       <p className="text-gray-600 mt-1">{c.text || c.content || c.comment || ''}</p>
                     </div>
                   ))}
