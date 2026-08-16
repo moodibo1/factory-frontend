@@ -164,10 +164,10 @@ export default function IssueCard({ issue, onUpdate, style }) {
     <>
       <div
         className={clsx(
-          'group relative rounded-2xl bg-white border transition-all duration-300',
-          'hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/[0.04] hover:border-gray-200',
-          'active:scale-[0.99]',
-          isEmergency ? 'border-red-200/60 d1-pulse-ring' : 'border-gray-100 shadow-sm'
+        'group relative rounded-2xl bg-white border transition-all duration-300',
+        'hover:-translate-y-1 hover:shadow-xl hover:shadow-black/[0.06] hover:border-gray-300',
+        'active:scale-[0.99]',
+        isEmergency ? 'border-red-200/60 d1-pulse-ring shadow-md' : 'border-gray-200 shadow-md'
         )}
         style={style}
       >

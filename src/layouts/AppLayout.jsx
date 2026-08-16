@@ -1,16 +1,21 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Outlet } from 'react-router-dom'
 import Navbar from '@/components/shared/Navbar'
 import SecurityProtection from '@/components/shared/SecurityProtection'
 import { useTranslation } from 'react-i18next'
+import { useAuth } from '@/store/AuthContext'
 
 export default function AppLayout() {
-  const { i18n } = useTranslation()
+  const { i18n, t } = useTranslation()
+  const { user } = useAuth()
   const lang = i18n.language?.substring(0, 2) || 'ar'
   const isRTL = lang === 'ar'
   const appName = isRTL ? 'ديوان' : 'D1'
 
-  // Keep the <html> element in sync whenever language changes
+  const watermarkLabel = user?.email || user?.name || 'D1'
+  const watermarkTiles = useMemo(() => Array.from({ length: 60 }, (_, i) => i), [])
+
+  // Keep <html> element in sync whenever language changes
   useEffect(() => {
     document.documentElement.dir = isRTL ? 'rtl' : 'ltr'
     document.documentElement.lang = lang
@@ -18,8 +23,12 @@ export default function AppLayout() {
   }, [lang, isRTL, appName])
 
   return (
-    <div className="min-h-screen bg-slate-50 text-gray-900 overflow-x-hidden flex flex-col font-sans" dir={isRTL ? 'rtl' : 'ltr'}>
-      <div className="system-watermark" aria-hidden="true" />
+    <div className="min-h-screen bg-slate-100 text-gray-900 overflow-x-hidden flex flex-col font-sans" dir={isRTL ? 'rtl' : 'ltr'}>
+      <div className="system-watermark" aria-hidden="true">
+        {watermarkTiles.map((i) => (
+          <span key={i} className="system-watermark-tile">{watermarkLabel}</span>
+        ))}
+      </div>
       <SecurityProtection />
       <Navbar />
       <main

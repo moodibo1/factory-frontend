@@ -333,19 +333,22 @@
   z-index: 9998;
   overflow: hidden;
   opacity: 0.04;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 4rem 3rem;
+  padding: 2rem;
+  transform: rotate(-20deg) scale(1.4);
+  transform-origin: center center;
 }
 
-.system-watermark::before {
-  content: 'D1 ديوان';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotate(-30deg);
-  font-size: 6rem;
-  font-weight: 800;
-  letter-spacing: 0.15em;
+.system-watermark-tile {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
   white-space: nowrap;
   color: currentColor;
+  user-select: none;
 }
 
 @media print {
