@@ -271,22 +271,86 @@
 }
 
 @media print {
+  *,
+  *::before,
+  *::after {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+    -webkit-filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+  }
+
   body {
     background: white !important;
     color: black !important;
   }
+
   .print\:hidden {
     display: none !important;
   }
+
   header, nav, .bottom-nav {
     display: none !important;
   }
+
   main {
     margin: 0 !important;
     padding: 0 !important;
     max-width: 100% !important;
   }
+
   canvas {
     max-width: 100% !important;
   }
+
+  img {
+    max-width: 100% !important;
+    page-break-inside: avoid;
+  }
+
+  .d1-glass {
+    background: white !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   SYSTEM WATERMARK
+   ═══════════════════════════════════════════════════════════════ */
+
+.system-watermark {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  overflow: hidden;
+  opacity: 0.04;
+}
+
+.system-watermark::before {
+  content: 'D1 ديوان';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-30deg);
+  font-size: 6rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  white-space: nowrap;
+  color: currentColor;
+}
+
+@media print {
+  .system-watermark {
+    display: none !important;
+  }
+}
+

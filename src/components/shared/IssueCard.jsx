@@ -212,7 +212,7 @@ export default function IssueCard({ issue, onUpdate, style }) {
 
             {/* Admin actions */}
             {isAdmin && (
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <div className="flex flex-wrap items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
                 <button onClick={() => setShowShareModal(true)} className="p-1.5 rounded-lg text-gray-400 hover:text-[#00A89B] hover:bg-[#00A89B]/8 transition-all active:scale-90" title="Share">
                   <Share2 size={14} />
                 </button>

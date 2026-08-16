@@ -146,51 +146,34 @@ export default function AdminPage() {
           {[1,2,3].map(i => <div key={i} className="border rounded-xl h-20 bg-gray-100 animate-pulse" />)}
         </div>
       ) : tab === 'users' ? (
-        <div className="overflow-hidden bg-white border border-gray-200 rounded-2xl shadow-sm">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-4 text-right font-semibold text-gray-700">User</th>
-                <th className="px-6 py-4 text-right font-semibold text-gray-700">Status</th>
-                <th className="px-6 py-4 text-right font-semibold text-gray-700">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
+            <div className="flex flex-col gap-3">
               {approvedUsers.map((user) => {
                 const isMe = user.id === currentUser?.id
                 const isAdmin = user.role === 'admin'
                 const busy = actionLoading === user.id
                 return (
-                  <tr key={user.id} className="hover:bg-gray-50/50 transition">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-teal-50 text-[#00A89B] flex items-center justify-center font-bold text-lg">
-                           {user.name?.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="font-semibold text-gray-900">{user.name}</span>
-                          <span className="text-xs text-gray-500">{user.email}</span>
-                        </div>
+                  <div key={user.id} className="bg-white border border-gray-200 rounded-2xl p-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between shadow-sm hover:bg-gray-50/50 transition">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-full bg-teal-50 text-[#00A89B] flex items-center justify-center font-bold text-lg shrink-0">
+                        {user.name?.charAt(0).toUpperCase()}
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={clsx('text-xs px-2.5 py-1 rounded-full font-medium', isAdmin ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600')}>
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-semibold text-gray-900 truncate">{user.name}</span>
+                        <span className="text-xs text-gray-500 truncate">{user.email}</span>
+                      </div>
+                      <span className={clsx('text-xs px-2.5 py-1 rounded-full font-medium shrink-0', isAdmin ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600')}>
                         {isAdmin ? t('system_admin') : t('normal_user')}
                       </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => setSelectedUser(user)} className="p-2 text-gray-400 hover:text-[#00A89B] transition"><Settings2 size={16} /></button>
-                        <button onClick={() => handleRoleToggle(user)} className="p-2 text-gray-400 hover:text-purple-600 transition">{isAdmin ? <ShieldOff size={16} /> : <ShieldCheck size={16} />}</button>
-                        <button onClick={() => handleDeleteUser(user.id)} className="p-2 text-gray-400 hover:text-red-600 transition"><Trash2 size={16} /></button>
-                      </div>
-                    </td>
-                  </tr>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button onClick={() => setSelectedUser(user)} className="p-2 text-gray-400 hover:text-[#00A89B] transition rounded-lg hover:bg-gray-100"><Settings2 size={18} /></button>
+                      <button onClick={() => handleRoleToggle(user)} className="p-2 text-gray-400 hover:text-purple-600 transition rounded-lg hover:bg-gray-100">{isAdmin ? <ShieldOff size={18} /> : <ShieldCheck size={18} />}</button>
+                      <button onClick={() => handleDeleteUser(user.id)} className="p-2 text-gray-400 hover:text-red-600 transition rounded-lg hover:bg-gray-100"><Trash2 size={18} /></button>
+                    </div>
+                  </div>
                 )
               })}
-            </tbody>
-          </table>
-        </div>
+            </div>
       ) : tab === 'pending' ? (
         <div className="flex flex-col gap-3">
           {pendingUsers.length === 0 ? (
