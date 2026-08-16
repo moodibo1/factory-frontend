@@ -13,4 +13,20 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  css: {
+    postcss: './postcss.config.js',
+  },
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          DEFAULT: '#00A89B',
+          foreground: '#FFFFFF',
+        },
+        neutral: {
+          gray: '#4A4A4A',
+        },
+      },
+    },
+  },
 })

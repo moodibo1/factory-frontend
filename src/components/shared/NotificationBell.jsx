@@ -6,11 +6,11 @@ import { clsx } from 'clsx'
 import { useTranslation } from 'react-i18next'
 
 const typeConfig = {
-  critical_issue: { icon: AlertTriangle, color: 'text-red-500',    bg: 'bg-red-500/10' },
-  overdue_issue:  { icon: Clock,         color: 'text-orange-500', bg: 'bg-orange-500/10' },
-  ai_alert:       { icon: Bot,           color: 'text-purple-500', bg: 'bg-purple-500/10' },
-  issue_closed:   { icon: CheckCircle,   color: 'text-green-500',  bg: 'bg-green-500/10' },
-  new_comment:    { icon: MessageCircle, color: 'text-blue-500',   bg: 'bg-blue-500/10' },
+  critical_issue: { icon: AlertTriangle, color: 'text-red-500',    bg: 'bg-red-50' },
+  overdue_issue:  { icon: Clock,         color: 'text-amber-500',  bg: 'bg-amber-50' },
+  ai_alert:       { icon: Bot,           color: 'text-purple-500', bg: 'bg-purple-50' },
+  issue_closed:   { icon: CheckCircle,   color: 'text-emerald-500', bg: 'bg-emerald-50' },
+  new_comment:    { icon: MessageCircle, color: 'text-blue-500',   bg: 'bg-blue-50' },
 }
 
 export default function NotificationBell() {
@@ -96,11 +96,11 @@ export default function NotificationBell() {
     <>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="relative p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition shrink-0"
+        className="relative p-2 rounded-xl text-gray-500 hover:text-[#00A89B] hover:bg-[#00A89B]/8 transition-all duration-200 active:scale-90"
       >
         <Bell size={20} />
         {unread > 0 && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+          <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold shadow-sm shadow-red-500/30">
             {unread > 9 ? '9+' : unread}
           </span>
         )}
@@ -109,12 +109,12 @@ export default function NotificationBell() {
       {open && (
         <>
           <div className="fixed inset-0 z-[9998]" onClick={() => setOpen(false)} />
-          <div className="fixed top-16 left-1/2 -translate-x-1/2 w-[90vw] max-w-sm bg-background border rounded-2xl shadow-xl z-[9999] flex flex-col overflow-hidden" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
-            <div className="flex items-center justify-between px-4 py-3 border-b">
+          <div className="fixed top-16 left-1/2 w-[90vw] max-w-sm d1-glass border border-white/40 rounded-2xl shadow-xl shadow-black/[0.08] z-[9999] flex flex-col overflow-hidden d1-slide-down" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
+            <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-100/80">
               <h3 className="font-bold text-sm">{t('notifications')}</h3>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 {unread > 0 && (
-                  <button onClick={handleMarkAllRead} className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition">
+                  <button onClick={handleMarkAllRead} className="text-xs text-gray-400 hover:text-[#00A89B] flex items-center gap-1 transition-all active:scale-95 px-1.5 py-0.5 rounded-lg hover:bg-[#00A89B]/8">
                     <CheckCheck size={14} />
                     {t('mark_all_read')}
                   </button>
@@ -123,13 +123,13 @@ export default function NotificationBell() {
                   <button
                     onClick={handleGenerateAlerts}
                     disabled={generating}
-                    className="text-xs text-purple-500 hover:text-purple-700 flex items-center gap-1 transition disabled:opacity-50"
+                    className="text-xs text-purple-500 hover:text-purple-700 flex items-center gap-1 transition-all disabled:opacity-50 active:scale-95 px-1.5 py-0.5 rounded-lg hover:bg-purple-50"
                   >
                     <Sparkles size={14} />
                     {generating ? '...' : t('smart_alerts')}
                   </button>
                 )}
-                <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground">
+                <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600 transition active:scale-90">
                   <X size={16} />
                 </button>
               </div>
@@ -137,9 +137,9 @@ export default function NotificationBell() {
 
             <div className="flex flex-col overflow-y-auto max-h-96">
               {notifications.length === 0 ? (
-                <div className="flex flex-col items-center gap-2 py-10 text-muted-foreground">
+                <div className="flex flex-col items-center gap-2 py-12 text-gray-300">
                   <Bell size={28} strokeWidth={1.2} />
-                  <p className="text-sm">{t('no_notifications')}</p>
+                  <p className="text-sm text-gray-400">{t('no_notifications')}</p>
                 </div>
               ) : (
                 notifications.map((notif) => {
@@ -150,8 +150,8 @@ export default function NotificationBell() {
                       key={notif.id}
                       onClick={() => notif.is_read === 0 && handleMarkRead(notif.id)}
                       className={clsx(
-                        'flex gap-3 px-4 py-3 border-b last:border-0 cursor-pointer hover:bg-muted/50 transition',
-                        notif.is_read === 0 && 'bg-primary/5'
+                        'flex gap-3 px-4 py-3.5 border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50/50 transition-all duration-150',
+                        notif.is_read === 0 && 'bg-[#00A89B]/[0.03]'
                       )}
                     >
                       <div className={clsx('p-2 rounded-xl h-fit shrink-0', config.bg)}>
@@ -159,17 +159,17 @@ export default function NotificationBell() {
                       </div>
                       <div className="flex flex-col gap-0.5 flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-1">
-                          <p className="text-xs font-semibold leading-tight">{notif.title}</p>
+                          <p className="text-xs font-semibold leading-tight text-gray-700">{notif.title}</p>
                           {isAdmin && (
-                            <button onClick={(e) => handleDelete(e, notif.id)} className="text-muted-foreground hover:text-destructive transition shrink-0">
+                            <button onClick={(e) => handleDelete(e, notif.id)} className="text-gray-300 hover:text-red-500 transition shrink-0 active:scale-90">
                               <X size={12} />
                             </button>
                           )}
                         </div>
-                        <p className="text-xs text-muted-foreground leading-relaxed">{notif.body}</p>
-                        <p className="text-xs text-muted-foreground/60 mt-1">{timeAgo(notif.created_at)}</p>
+                        <p className="text-xs text-gray-400 leading-relaxed">{notif.body}</p>
+                        <p className="text-[11px] text-gray-300 mt-0.5">{timeAgo(notif.created_at)}</p>
                       </div>
-                      {notif.is_read === 0 && <div className="w-2 h-2 bg-primary rounded-full shrink-0 mt-1" />}
+                      {notif.is_read === 0 && <div className="w-2 h-2 bg-[#00A89B] rounded-full shrink-0 mt-1.5" />}
                     </div>
                   )
                 })
@@ -181,4 +181,3 @@ export default function NotificationBell() {
     </>
   )
 }
-

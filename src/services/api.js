@@ -1,5 +1,10 @@
-// Remove supabase import entirely because we are going back to basic fetch
-const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/+$/, '')
+const RENDER_BACKEND_URL = 'https://factory-backend-jjqi.onrender.com'
+const BASE_URL = (import.meta.env.VITE_API_URL || RENDER_BACKEND_URL).replace(/\/+$/, '')
+
+console.log('API Base URL:', BASE_URL)
+if (!import.meta.env.VITE_API_URL) {
+  console.warn('VITE_API_URL not found, falling back to:', RENDER_BACKEND_URL)
+}
 
 export async function apiRequest(endpoint, options = {}) {
   const token = localStorage.getItem('token')

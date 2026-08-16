@@ -5,8 +5,8 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 const resources = {
   ar: {
     translation: {
-      // ── Navbar ──────────────────────────────────────────────
-      app_name: '🏭 النظام',
+       // ── Navbar ──────────────────────────────────────────────
+       app_name: 'D1',
       home: 'الرئيسية',
       my_account: 'حسابي',
       smart_search: 'بحث ذكي',

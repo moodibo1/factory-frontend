@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { clsx } from 'clsx'
 import { ImageOff, MessageCircle, Send, ChevronRight, Trash2, Archive, ZoomIn, X, Printer, Share2 } from 'lucide-react'
 import { issuesService, adminService } from '@/services/api'
@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
-export default function IssueCard({ issue, onUpdate }) {
+export default function IssueCard({ issue, onUpdate, style }) {
   const { user } = useAuth()
   const { t } = useTranslation()
   const [showComments, setShowComments] = useState(false)
@@ -19,20 +19,42 @@ export default function IssueCard({ issue, onUpdate }) {
   const [showShareModal, setShowShareModal] = useState(false)
   const [sharing, setSharing] = useState(false)
 
-  // Use the categories array to seed the share modal checkboxes
   const [selectedCategories, setSelectedCategories] = useState(issue.categories || [issue.category])
 
   const typeMap = {
-    problem: { label: t('problem'), class: 'bg-orange-500/20 text-orange-500 border-orange-500/30' },
-    note: { label: t('note'), class: 'bg-blue-500/20 text-blue-500 border-blue-500/30' },
-    emergency: { label: t('emergency'), class: 'bg-red-500/20 text-red-500 border-red-500/30' },
+    problem: { label: t('problem') },
+    note: { label: t('note') },
+    emergency: { label: t('emergency') },
   }
 
   const statusMap = {
-    open:        { label: t('open'),      class: 'bg-blue-500/20 text-blue-500 border-blue-500/30',     next: t('in_progress') },
-    in_progress: { label: t('in_progress'), class: 'bg-yellow-500/20 text-yellow-500 border-yellow-500/30', next: t('closed') },
-    closed:      { label: t('closed'),       class: 'bg-gray-500/20 text-gray-400 border-gray-500/30',     next: t('reopened') },
-    reopened:    { label: t('reopened'),   class: 'bg-purple-500/20 text-purple-500 border-purple-500/30', next: t('in_progress') },
+    open:        { label: t('open'), next: t('in_progress') },
+    in_progress: { label: t('in_progress'), next: t('closed') },
+    closed:      { label: t('closed'), next: t('reopened') },
+    reopened:    { label: t('reopened'), next: t('in_progress') },
+  }
+
+  const typeInfo = typeMap[issue.type] || typeMap.problem
+  const statusInfo = statusMap[issue.status] || statusMap.open
+
+  const isEmergency = issue.type === 'emergency'
+
+  const getTypeStyle = (type) => {
+    switch (type) {
+      case 'emergency': return 'bg-red-50 text-red-600 border-red-100'
+      case 'problem': return 'bg-amber-50 text-amber-600 border-amber-100'
+      case 'note': return 'bg-blue-50 text-blue-600 border-blue-100'
+      default: return 'bg-gray-50 text-gray-600 border-gray-100'
+    }
+  }
+
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case 'closed': return 'bg-gray-100 text-gray-500'
+      case 'in_progress': return 'bg-yellow-50 text-yellow-600'
+      case 'reopened': return 'bg-purple-50 text-purple-600'
+      default: return 'bg-teal-50 text-[#00A89B]'
+    }
   }
 
   const isAdmin = user?.role === 'admin'
@@ -40,18 +62,14 @@ export default function IssueCard({ issue, onUpdate }) {
     try { return JSON.parse(user?.permissions || '{}') }
     catch { return { can_delete: false } }
   })()
-  
-  const canDelete = isAdmin || (userPerms.can_delete && issue.creator_id === user?.id)
 
-  const typeInfo = typeMap[issue.type] || typeMap.problem
-  const status = statusMap[issue.status] || statusMap.open
+  const canDelete = isAdmin || (userPerms.can_delete && issue.creator_id === user?.id)
 
   const mediaUrl = issue.media_url
     ? issue.media_url.startsWith('http') ? issue.media_url : `${BASE_URL}${issue.media_url}`
     : null
 
   const handlePrint = () => {
-    // Create a clean print view
     const printWindow = window.open('', '_blank')
     const printContent = `
       <!DOCTYPE html>
@@ -61,95 +79,21 @@ export default function IssueCard({ issue, onUpdate }) {
         <title>${t('print')} - ${issue.title}</title>
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
-          body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            padding: 40px;
-            background: white;
-            color: #000;
-            direction: rtl;
-          }
-          .header { text-align: center; border-bottom: 3px solid #2563eb; padding-bottom: 20px; margin-bottom: 30px; }
-          .header h1 { font-size: 28px; color: #1e40af; margin-bottom: 5px; }
-          .header p { color: #64748b; font-size: 14px; }
-          .issue-container { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 30px; margin-bottom: 20px; }
-          .issue-title { font-size: 24px; font-weight: bold; color: #1e293b; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #cbd5e1; }
-          .meta-info { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-          .meta-item { display: flex; align-items: center; gap: 8px; }
-          .meta-label { font-weight: bold; color: #475569; font-size: 14px; }
-          .meta-value { color: #1e293b; font-size: 14px; }
-          .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-          .badge-problem { background: #fed7aa; color: #c2410c; }
-          .badge-note { background: #bfdbfe; color: #1e40af; }
-          .badge-emergency { background: #fecaca; color: #991b1b; }
-          .badge-open { background: #bfdbfe; color: #1e40af; }
-          .badge-progress { background: #fef3c7; color: #92400e; }
-          .badge-closed { background: #e2e8f0; color: #475569; }
-          .badge-reopened { background: #e9d5ff; color: #6b21a8; }
-          .description-section { margin-top: 20px; padding: 20px; background: white; border-radius: 8px; border: 1px solid #e2e8f0; }
-          .description-section p { white-space: pre-wrap; font-size: 14px; }
-          .image-section img { max-width: 100%; border-radius: 8px; margin-top: 20px; }
-          .comments-section { margin-top: 30px; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; }
-          .comment { padding: 12px; background: #f8fafc; border-radius: 6px; margin-bottom: 10px; border-right: 3px solid #2563eb; }
-          .comment-author { font-weight: bold; color: #1e40af; font-size: 13px; margin-bottom: 5px; }
-          .footer { text-align: center; font-size: 12px; color: #64748b; margin-top: 40px; border-top: 2px solid #e2e8f0; padding-top: 20px; }
+          body { font-family: sans-serif; padding: 40px; }
+          .issue-container { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 30px; }
         </style>
       </head>
       <body>
-        <div class="header">
-          <h1>${t('app_name')}</h1>
-        </div>
-        
         <div class="issue-container">
-          <div class="issue-title">${issue.title}</div>
-          
-          <div class="meta-info">
-            <div class="meta-item">
-              <span class="meta-label">${t('report_type')}:</span>
-              <span class="badge badge-${issue.type}">${typeInfo.label}</span>
-            </div>
-            <div class="meta-item">
-              <span class="meta-label">Status:</span>
-              <span class="badge badge-${issue.status}">${status.label}</span>
-            </div>
-          </div>
-          
-          ${issue.description ? `
-          <div class="description-section">
-            <p>${issue.description}</p>
-          </div>
-          ` : ''}
-          
-          ${issue.media_type === 'image' && mediaUrl ? `
-          <div class="image-section">
-            <img src="${mediaUrl}" alt="Attachment" />
-          </div>
-          ` : ''}
+          <h1>${issue.title}</h1>
+          <p>${issue.description}</p>
         </div>
-        
-        ${comments.length > 0 ? `
-        <div class="comments-section">
-          <h3>${t('comments')} (${comments.length})</h3>
-          ${comments.map(c => `
-            <div class="comment">
-              <div class="comment-author">${c.author?.name || t('unknown')}</div>
-              <div class="comment-text">${c.text}</div>
-            </div>
-          `).join('')}
-        </div>
-        ` : ''}
-        
-        <div class="footer">
-          <p>${new Date().toLocaleString()}</p>
-        </div>
-        
-        <script>
-          setTimeout(() => window.print(), 500);
-        </script>
       </body>
       </html>
     `
     printWindow.document.write(printContent)
     printWindow.document.close()
+    setTimeout(() => printWindow.print(), 500)
   }
 
   const handleCycleStatus = async () => {
@@ -168,11 +112,13 @@ export default function IssueCard({ issue, onUpdate }) {
     e.preventDefault()
     if (!commentText.trim()) return
     try {
-      const newComment = await issuesService.addComment(issue.id, commentText)
-      setComments((prev) => [...prev, newComment])
-      setCommentText('')
+      const newComment = await issuesService.addComment(issue.id, commentText);
+      console.log("New comment response:", newComment);
+      const commentWithUser = { ...newComment, user_name: user?.name, created_at: new Date().toISOString() };
+      setComments((prev) => [...prev, commentWithUser]);
+      setCommentText('');
     } catch (err) {
-      console.error(err)
+      console.error("Failed to add comment", err);
     }
   }
 
@@ -186,7 +132,7 @@ export default function IssueCard({ issue, onUpdate }) {
   }
 
   const handleDelete = async () => {
-    if (!confirm(t('confirm_delete') || 'هل أنت متأكد من الحذف؟')) return
+    if (!confirm(t('confirm_delete') || '?? ??? ????? ?? ??????')) return
     try {
       await adminService.deleteIssue(issue.id)
       onUpdate()
@@ -202,222 +148,251 @@ export default function IssueCard({ issue, onUpdate }) {
   }
 
   const handleShareSubmit = async () => {
-    if (selectedCategories.length === 0) return
     setSharing(true)
     try {
       await adminService.shareIssue(issue.id, selectedCategories)
       setShowShareModal(false)
       onUpdate()
     } catch (e) {
-      console.error(e)
+      alert(t('error'))
     } finally {
       setSharing(false)
     }
   }
 
-  const toggleShareCategory = (cat) => {
-    if (selectedCategories.includes(cat)) {
-      if (selectedCategories.length > 1) {
-        setSelectedCategories(selectedCategories.filter(c => c !== cat))
-      }
-    } else {
-      setSelectedCategories([...selectedCategories, cat])
-    }
-  }
-
   return (
-    <div className="border rounded-2xl overflow-hidden bg-background shadow-sm flex flex-col">
-      {issue.media_type === 'image' && mediaUrl ? (
-        imageError ? (
-          <div className="w-full h-52 bg-muted flex flex-col gap-2 items-center justify-center text-muted-foreground border-b border-dashed">
-            <ImageOff size={32} className="opacity-50" />
-            <span className="text-sm font-medium">{t('image_unavailable') || 'الصورة غير متوفرة'}</span>
-          </div>
-        ) : (
-          <>
-            <div className="relative group cursor-pointer" onClick={handleImageClick}>
-              <img 
-                src={mediaUrl} 
-                alt={t('media_attachment')} 
-                className="w-full h-52 object-cover" 
-                onError={() => setImageError(true)}
-              />
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                <ZoomIn size={32} className="text-white" />
-              </div>
+    <>
+      <div
+        className={clsx(
+          'group relative rounded-2xl bg-white border transition-all duration-300',
+          'hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/[0.04] hover:border-gray-200',
+          'active:scale-[0.99]',
+          isEmergency ? 'border-red-200/60 d1-pulse-ring' : 'border-gray-100 shadow-sm'
+        )}
+        style={style}
+      >
+        {/* Emergency top accent bar */}
+        {isEmergency && (
+          <div className="h-1 w-full bg-gradient-to-r from-red-500 via-red-400 to-orange-400 rounded-t-2xl" />
+        )}
+
+        {/* Media */}
+        {issue.media_type === 'image' && mediaUrl && !imageError ? (
+          <div className="relative cursor-pointer overflow-hidden" onClick={handleImageClick}>
+            <img
+              src={mediaUrl}
+              alt={issue.title}
+              className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+              onError={() => setImageError(true)}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+              <ZoomIn size={28} className="text-white drop-shadow-lg" />
             </div>
-            {showImage && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90" onClick={() => setShowImage(false)}>
-                <div className="relative max-w-4xl w-full max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
-                  <button onClick={() => setShowImage(false)} className="absolute -top-10 right-0 text-white hover:text-gray-300">
-                    <X size={24} />
-                  </button>
-                  <img src={mediaUrl} alt={t('media_attachment')} className="max-w-full max-h-[80vh] object-contain rounded-lg" />
-                </div>
-              </div>
-            )}
-          </>
-        )
-      ) : issue.media_type === 'video' && mediaUrl ? (
-        imageError ? (
-          <div className="w-full h-52 bg-muted flex flex-col gap-2 items-center justify-center text-muted-foreground border-b border-dashed">
-            <ImageOff size={32} className="opacity-50" />
-            <span className="text-sm font-medium">{t('video_unavailable') || 'الفيديو غير متوفر'}</span>
           </div>
-        ) : (
-          <video 
-            src={mediaUrl} 
-            controls 
-            className="w-full h-52 object-cover bg-black" 
-            onError={() => setImageError(true)}
-          />
-        )
-      ) : (
-        <div className="w-full h-28 bg-muted flex items-center justify-center text-muted-foreground">
-          <ImageOff size={28} />
-        </div>
-      )}
+        ) : null}
 
-      <div className="p-4 flex flex-col gap-3">
-        <div className="flex items-center justify-between gap-2">
-          <span className={clsx('text-xs px-2 py-1 rounded-full border font-medium', typeInfo.class)}>
-            {typeInfo.label}
-          </span>
+        {/* Body */}
+        <div className="p-4 sm:p-5 flex flex-col gap-3">
+          {/* Badges row */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className={clsx(
+                'text-[11px] px-2.5 py-1 rounded-full font-semibold border transition-all',
+                getTypeStyle(issue.type)
+              )}>
+                {typeInfo.label}
+              </span>
+              <span className={clsx(
+                'text-[11px] px-2.5 py-1 rounded-full font-semibold',
+                getStatusStyle(issue.status)
+              )}>
+                {statusInfo.label}
+              </span>
+            </div>
 
-          <div className="flex items-center gap-2">
-            <span className={clsx('text-xs px-2 py-1 rounded-full border font-medium', status.class)}>
-              {status.label}
-            </span>
-            
+            {/* Admin actions */}
             {isAdmin && (
-              <>
-                <button
-                  onClick={() => setShowShareModal(true)}
-                  className="text-muted-foreground hover:text-blue-500 transition p-1"
-                  title="مشاركة / تعديل الأقسام"
-                >
-                  <Share2 size={16} />
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <button onClick={() => setShowShareModal(true)} className="p-1.5 rounded-lg text-gray-400 hover:text-[#00A89B] hover:bg-[#00A89B]/8 transition-all active:scale-90" title="Share">
+                  <Share2 size={14} />
                 </button>
-
-                <button
-                  onClick={handlePrint}
-                  className="text-muted-foreground hover:text-primary transition p-1"
-                  title={t('print')}
-                >
-                  <Printer size={16} />
+                <button onClick={handlePrint} className="p-1.5 rounded-lg text-gray-400 hover:text-[#00A89B] hover:bg-[#00A89B]/8 transition-all active:scale-90" title="Print">
+                  <Printer size={14} />
                 </button>
-                
                 <button
                   onClick={handleCycleStatus}
                   disabled={cycling}
-                  className="flex items-center gap-1 text-xs px-2 py-1 rounded-full border border-dashed border-muted-foreground text-muted-foreground hover:border-primary hover:text-primary transition disabled:opacity-40"
-                  title={status.next}
+                  className="text-[10px] px-2 py-1 rounded-lg border border-dashed border-gray-300 text-gray-400 hover:text-[#00A89B] hover:border-[#00A89B]/40 transition-all active:scale-90 disabled:opacity-50"
                 >
-                  {status.next}
-                  <ChevronRight size={12} />
+                  {statusInfo.next} <ChevronRight size={10} className="inline rtl:rotate-180" />
                 </button>
-                {issue.status === 'closed' && !issue.is_archived && (
-                  <button
-                    onClick={handleArchive}
-                    className="text-muted-foreground hover:text-primary transition p-1"
-                    title={t('archive')}
-                  >
-                    <Archive size={16} />
-                  </button>
-                )}
-              </>
-            )}
-            {canDelete && (
-              <button
-                onClick={handleDelete}
-                className="text-muted-foreground hover:text-destructive transition p-1"
-                title={t('delete')}
-              >
-                <Trash2 size={16} />
-              </button>
-            )}
-          </div>
-        </div>
-
-        <h2 className="font-bold text-base break-words min-w-0">{issue.title}</h2>
-        {issue.description && <p className="text-sm text-muted-foreground break-words min-w-0 whitespace-pre-wrap">{issue.description}</p>}
-
-        <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t">
-          <span>{issue.creator?.name || t('unknown')}</span>
-          <span>{new Date(issue.created_at).toLocaleDateString()}</span>
-        </div>
-
-        <button
-          onClick={() => setShowComments((v) => !v)}
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition"
-        >
-          <MessageCircle size={16} />
-          {comments.length > 0 ? `${comments.length} ${t('comment')}` : t('add_comment')}
-        </button>
-
-        {showComments && (
-          <div className="flex flex-col gap-2 pt-2 border-t">
-            {comments.map((c) => (
-              <div key={c.id} className="bg-muted rounded-xl px-3 py-2 text-sm break-words min-w-0">
-                <span className="font-medium">{c.author?.name || t('unknown')}: </span>
-                <span className="text-muted-foreground whitespace-pre-wrap">{c.text}</span>
               </div>
-            ))}
-            <form onSubmit={handleComment} className="flex gap-2 mt-1">
-              <input
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                placeholder={`${t('add_comment')}...`}
-                className="flex-1 bg-muted rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 ring-primary"
-              />
-              <button type="submit" className="text-primary hover:opacity-80">
-                <Send size={18} />
-              </button>
-            </form>
+            )}
           </div>
-        )}
+
+          {/* Title */}
+          <h3 className="font-bold text-[15px] text-gray-900 leading-snug">{issue.title}</h3>
+
+          {/* Description */}
+          {issue.description && (
+            <p className="text-sm text-gray-500 leading-relaxed whitespace-pre-wrap line-clamp-3">
+              {issue.description}
+            </p>
+          )}
+
+          {/* Footer */}
+          <div className="flex items-center justify-between pt-3 border-t border-gray-50">
+            <div className="flex items-center gap-3">
+              {/* Creator */}
+              <span className="text-xs text-gray-400 font-medium">
+                {issue.creator?.name || t('unknown')}
+              </span>
+              {/* Date */}
+              <span className="text-xs text-gray-300">
+                {new Date(issue.created_at).toLocaleDateString()}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              {/* Comments toggle */}
+              <button
+                onClick={() => setShowComments(!showComments)}
+                className={clsx(
+                  'flex items-center gap-1 text-xs px-2 py-1 rounded-lg transition-all active:scale-90',
+                  showComments ? 'bg-[#00A89B]/8 text-[#00A89B]' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                )}
+              >
+                <MessageCircle size={13} />
+                {comments.length > 0 && <span>{comments.length}</span>}
+              </button>
+
+              {/* Delete */}
+              {canDelete && (
+                <button
+                  onClick={handleDelete}
+                  className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all active:scale-90"
+                >
+                  <Trash2 size={13} />
+                </button>
+              )}
+
+              {/* Archive (admin only) */}
+              {isAdmin && (
+                <button
+                  onClick={handleArchive}
+                  className="p-1.5 rounded-lg text-gray-300 hover:text-gray-500 hover:bg-gray-50 transition-all active:scale-90"
+                >
+                  <Archive size={13} />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* -- Comments Section ---------------------------- */}
+          {showComments && (
+            <div className="flex flex-col gap-3 pt-3 border-t border-gray-50 d1-fade-in-up">
+              {comments.length > 0 && (
+                <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
+{comments.map((c, i) => (
+                    <div key={c.id || i} className="bg-gray-50/80 rounded-xl px-3 py-2 text-xs leading-relaxed">
+                      <span className="font-semibold text-gray-700">{c.author?.name || t('unknown')}</span>
+                      <span className="mx-1.5 text-gray-300">·</span>
+                      <span className="text-gray-400">{c.created_at ? new Date(c.created_at).toLocaleDateString() : ''}</span>
+                      <p className="text-gray-600 mt-1">{c.text || c.content || c.comment || ''}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <form onSubmit={handleComment} className="flex gap-2">
+                <input
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  placeholder={t('add_comment')}
+                  className="flex-1 bg-gray-50 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 ring-[#00A89B]/30 transition-shadow"
+                />
+                <button
+                  type="submit"
+                  disabled={!commentText.trim()}
+                  className="p-2 rounded-xl bg-[#00A89B] text-white hover:bg-[#00A89B]/90 transition-all active:scale-90 disabled:opacity-40"
+                >
+                  <Send size={14} />
+                </button>
+              </form>
+            </div>
+          )}
+        </div>
       </div>
 
+      {/* -- Image Lightbox ------------------------------------ */}
+      {showImage && mediaUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 d1-backdrop-in"
+          onClick={() => setShowImage(false)}
+        >
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+          <img
+            src={mediaUrl}
+            alt={issue.title}
+            className="relative z-10 max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl d1-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <button
+            onClick={() => setShowImage(false)}
+            className="absolute top-6 right-6 z-20 p-2 bg-white/10 backdrop-blur-md rounded-full text-white hover:bg-white/20 transition-all active:scale-90"
+          >
+            <X size={20} />
+          </button>
+        </div>
+      )}
+
+      {/* -- Share Modal --------------------------------------- */}
       {showShareModal && (
-        <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-background w-full max-w-sm rounded-2xl p-6 flex flex-col gap-4">
-            <div className="flex items-center justify-between border-b pb-3">
-              <h2 className="text-lg font-bold">مشاركة السجل</h2>
-              <button onClick={() => setShowShareModal(false)} className="text-muted-foreground hover:text-foreground">
-                <X size={20} />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm d1-backdrop-in" onClick={() => setShowShareModal(false)} />
+          <div className="relative w-full max-w-xs bg-white rounded-2xl shadow-2xl p-5 flex flex-col gap-4 d1-scale-in">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-sm">{t('cross_post')}</h3>
+              <button onClick={() => setShowShareModal(false)} className="text-gray-400 hover:text-gray-600 transition active:scale-90">
+                <X size={18} />
               </button>
             </div>
-            
-            <p className="text-sm text-muted-foreground">اختر الأقسام التي سيظهر فيها هذا السجل:</p>
-            
-            <div className="flex flex-col gap-2">
-              {[
-                { id: 'lab', label: t('labs') || 'المختبرات' },
-                { id: 'filling', label: t('filling') || 'التعبئة' },
-                { id: 'production', label: t('production') || 'الإنتاج' }
-              ].map(c => (
-                <label key={c.id} className="flex items-center gap-3 p-3 rounded-xl border border-input hover:bg-muted/50 transition cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={selectedCategories.includes(c.id)}
-                    onChange={() => toggleShareCategory(c.id)}
-                    className="w-4 h-4 rounded text-primary focus:ring-primary"
-                  />
-                  <span className="text-sm font-medium">{c.label}</span>
-                </label>
+            <div className="flex gap-2 flex-wrap">
+              {['lab', 'filling', 'production'].map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => {
+                    setSelectedCategories(prev =>
+                      prev.includes(cat) && prev.length > 1
+                        ? prev.filter(c => c !== cat)
+                        : prev.includes(cat) ? prev : [...prev, cat]
+                    )
+                  }}
+                  className={clsx(
+                    'px-3 py-1.5 rounded-xl text-xs font-medium border transition-all active:scale-95',
+                    selectedCategories.includes(cat)
+                      ? 'bg-[#00A89B] text-white border-[#00A89B]'
+                      : 'text-gray-500 border-gray-200 hover:border-[#00A89B]/40'
+                  )}
+                >
+                  {t(cat === 'lab' ? 'labs' : cat)}
+                </button>
               ))}
             </div>
-
-            <button 
+            <button
               onClick={handleShareSubmit}
-              disabled={sharing || selectedCategories.length === 0}
-              className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50 mt-2"
+              disabled={sharing}
+              className="w-full py-2.5 rounded-xl bg-[#00A89B] text-white text-sm font-semibold hover:bg-[#00A89B]/90 transition-all active:scale-95 disabled:opacity-50"
             >
-              {sharing ? t('loading') || 'جاري الحفظ...' : 'حفظ ونشر'}
+              {sharing ? t('loading') : t('save')}
             </button>
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }
+
+
+
+
+

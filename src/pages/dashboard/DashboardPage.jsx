@@ -80,19 +80,24 @@ export default function DashboardPage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  /* ── Loading Skeleton ──────────────────────────────────── */
   if (loading) return (
     <div className="flex flex-col gap-4 py-4">
-      {[1,2,3].map(i => <div key={i} className="border rounded-2xl h-32 bg-muted animate-pulse" />)}
+      <div className="d1-skeleton h-14 w-full" />
+      <div className="grid grid-cols-2 gap-3">
+        {[1,2,3,4].map(i => <div key={i} className="d1-skeleton h-32" style={{ animationDelay: `${i * 0.08}s` }} />)}
+      </div>
+      <div className="d1-skeleton h-56" style={{ animationDelay: '0.3s' }} />
     </div>
   )
 
-  if (!stats) return <p className="text-center py-10 text-muted-foreground">{t('loading_failed')}</p>
+  if (!stats) return <p className="text-center py-10 text-gray-400">{t('loading_failed')}</p>
 
   const kpis = [
-    { label: t('total_records'), value: stats.total, icon: TrendingUp, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-    { label: t('open_records'), value: stats.open, icon: Clock, color: 'text-orange-500', bg: 'bg-orange-500/10' },
-    { label: t('closed_records'), value: stats.closed, icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-500/10' },
-    { label: t('emergencies'), value: stats.emergency, icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-500/10' },
+    { label: t('total_records'), value: stats.total, icon: TrendingUp, color: 'text-blue-500', bg: 'bg-blue-500/8', iconBg: 'bg-blue-50' },
+    { label: t('open_records'), value: stats.open, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/8', iconBg: 'bg-amber-50' },
+    { label: t('closed_records'), value: stats.closed, icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-500/8', iconBg: 'bg-emerald-50' },
+    { label: t('emergencies'), value: stats.emergency, icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-500/8', iconBg: 'bg-red-50' },
   ]
 
   const barData = [
@@ -110,76 +115,89 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6 py-4">
-      <div className="flex items-center justify-between">
+      {/* ── Header ─────────────────────────────────────────── */}
+      <div className="d1-fade-in-up flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
-            className="p-2 rounded-xl hover:bg-muted transition-colors"
+            className="p-2 rounded-xl hover:bg-gray-100 transition-all duration-200 active:scale-90"
             title={t('back')}
           >
             <ArrowLeft size={20} />
           </button>
-          <h1 className="text-2xl font-bold">{t('reports')}</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight">{t('reports')}</h1>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => window.print()} className="p-2 bg-muted rounded-xl text-muted-foreground hover:text-foreground transition" title={t('print')}>
-            <Printer size={20} />
+          <button onClick={() => window.print()} className="p-2.5 bg-white border border-gray-100 rounded-xl text-gray-400 hover:text-gray-600 hover:border-gray-200 transition-all active:scale-90 shadow-sm" title={t('print')}>
+            <Printer size={18} />
           </button>
-          <button onClick={() => setShowExcelModal(true)} className="flex items-center gap-2 px-4 py-2 bg-green-600/10 text-green-600 border border-green-600/20 rounded-xl hover:bg-green-600 hover:text-white transition font-medium text-sm">
+          <button onClick={() => setShowExcelModal(true)} className="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl hover:bg-emerald-500 hover:text-white hover:border-emerald-500 transition-all duration-200 font-medium text-sm active:scale-95 shadow-sm">
             <Download size={16} />
             {t('export_excel')}
           </button>
         </div>
       </div>
 
+      {/* ── KPI Cards ──────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-3">
-        {kpis.map((kpi) => (
-          <div key={kpi.label} className={`rounded-2xl p-4 flex flex-col gap-2 ${kpi.bg} border`}>
-            <div className={kpi.color}><kpi.icon size={22} /></div>
-            <span className="text-2xl font-bold">{kpi.value}</span>
-            <span className="text-xs text-muted-foreground">{kpi.label}</span>
+        {kpis.map((kpi, i) => (
+          <div
+            key={kpi.label}
+            className={`d1-fade-in-up d1-stagger-${i + 1} group rounded-2xl p-5 flex flex-col gap-3 bg-white border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300`}
+          >
+            {/* Oversized icon in container */}
+            <div className={`w-12 h-12 rounded-2xl ${kpi.iconBg} flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}>
+              <kpi.icon size={24} className={kpi.color} strokeWidth={1.8} />
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-3xl font-extrabold tracking-tight text-gray-900">{kpi.value}</span>
+              <span className="text-xs text-gray-400 font-medium">{kpi.label}</span>
+            </div>
           </div>
         ))}
       </div>
 
-      <div className="border rounded-2xl p-4 flex flex-col gap-3 min-w-0 overflow-hidden">
-        <h2 className="font-semibold text-sm text-muted-foreground">{t('issues_by_department')}</h2>
-        <div className="w-full" style={{ height: 180 }}>
+      {/* ── Bar Chart ──────────────────────────────────────── */}
+      <div className="d1-fade-in-up d1-stagger-5 bg-white border border-gray-100 rounded-2xl p-5 flex flex-col gap-3 shadow-sm">
+        <h2 className="font-bold text-sm text-gray-600">{t('issues_by_department')}</h2>
+        <div className="w-full" style={{ height: 200 }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={barData}>
-              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 12 }} width={30} />
-              <Tooltip />
-              <Bar dataKey="count" fill="#8b5cf6" radius={[6, 6, 0, 0]} name={t('count')} />
+              <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: '#94a3b8' }} width={30} axisLine={false} tickLine={false} />
+              <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #f1f5f9', fontSize: 12, boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }} />
+              <Bar dataKey="count" fill="#00A89B" radius={[8, 8, 0, 0]} name={t('count')} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
+      {/* ── Pie Chart ──────────────────────────────────────── */}
       {pieData.length > 0 && (
-        <div className="border rounded-2xl p-4 flex flex-col gap-3 min-w-0 overflow-hidden">
-          <h2 className="font-semibold text-sm text-muted-foreground">{t('severity_distribution')}</h2>
+        <div className="d1-fade-in-up d1-stagger-6 bg-white border border-gray-100 rounded-2xl p-5 flex flex-col gap-3 shadow-sm">
+          <h2 className="font-bold text-sm text-gray-600">{t('severity_distribution')}</h2>
           <div className="w-full" style={{ height: 220 }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie data={pieData} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={4} dataKey="value">
                   {pieData.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
                 </Pie>
-                <Legend />
-                <Tooltip />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #f1f5f9', fontSize: 12 }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
       )}
 
-      <div className="border rounded-2xl p-4 flex flex-col gap-3">
-        <h2 className="font-semibold text-sm text-muted-foreground">{t('latest_issues')}</h2>
-        <div className="flex flex-col gap-2">
-          {recentIssues.map((issue) => (
-            <div key={issue.id} className="flex items-center justify-between text-sm py-2 border-b last:border-0">
-              <span className="font-medium truncate max-w-[60%]">{issue.title}</span>
-              <span className={`text-xs px-2 py-0.5 rounded-full ${issue.status === 'open' ? 'bg-blue-500/20 text-blue-500' : 'bg-gray-500/20 text-gray-400'}`}>
+      {/* ── Latest Issues ──────────────────────────────────── */}
+      <div className="d1-fade-in-up bg-white border border-gray-100 rounded-2xl p-5 flex flex-col gap-3 shadow-sm">
+        <h2 className="font-bold text-sm text-gray-600">{t('latest_issues')}</h2>
+        <div className="flex flex-col">
+          {recentIssues.map((issue, i) => (
+            <div key={issue.id} className={`flex items-center justify-between text-sm py-3 transition-colors hover:bg-gray-50/50 rounded-xl px-2 -mx-2 ${i < recentIssues.length - 1 ? 'border-b border-gray-50' : ''}`}>
+              <span className="font-medium truncate max-w-[60%] text-gray-700">{issue.title}</span>
+              <span className={`text-[11px] px-2.5 py-0.5 rounded-full font-medium ${issue.status === 'open' ? 'bg-teal-50 text-[#00A89B]' : 'bg-gray-100 text-gray-400'}`}>
                 {t(issue.status)}
               </span>
             </div>
@@ -187,36 +205,39 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="border-2 border-dashed border-purple-500/30 rounded-2xl p-4 flex flex-col gap-4 bg-purple-500/5">
+      {/* ── AI Report Section ──────────────────────────────── */}
+      <div className="d1-fade-in-up bg-white border-2 border-dashed border-purple-200 rounded-2xl p-5 flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles size={20} className="text-purple-500" />
-            <h2 className="font-bold">{t('ai_smart_report')}</h2>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-purple-50 flex items-center justify-center">
+              <Sparkles size={20} className="text-purple-500" />
+            </div>
+            <h2 className="font-extrabold text-sm">{t('ai_smart_report')}</h2>
           </div>
           {aiReport && (
-            <button onClick={handleCopy} className="text-xs flex items-center gap-1 text-muted-foreground hover:text-foreground transition">
-              {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+            <button onClick={handleCopy} className="text-xs flex items-center gap-1 text-gray-400 hover:text-gray-600 transition-all active:scale-95 px-2 py-1 rounded-lg hover:bg-gray-50">
+              {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
               {copied ? t('copied') : t('copy')}
             </button>
           )}
         </div>
 
         <div className="flex flex-col gap-3">
-          <p className="text-xs text-muted-foreground font-semibold">{t('generate_report')}</p>
+          <p className="text-xs text-gray-400 font-medium">{t('generate_report')}</p>
           <div className="flex gap-2 flex-wrap">
             <button
               onClick={() => handleAiReport('')}
               disabled={aiLoading}
-              className="text-xs px-3 py-2 bg-purple-500/10 text-purple-600 rounded-xl border border-purple-500/20 hover:bg-purple-600 hover:text-white transition disabled:opacity-50"
+              className="text-xs px-3.5 py-2 bg-purple-50 text-purple-600 rounded-xl border border-purple-100 hover:bg-purple-500 hover:text-white hover:border-purple-500 transition-all duration-200 disabled:opacity-50 active:scale-95"
             >
-              📊 {t('current_factory_status')}
+              {t('current_factory_status')}
             </button>
             <button
               onClick={() => handleAiReport(t('monthly_performance_prompt'))}
               disabled={aiLoading}
-              className="text-xs px-3 py-2 bg-purple-500/10 text-purple-600 rounded-xl border border-purple-500/20 hover:bg-purple-600 hover:text-white transition disabled:opacity-50"
+              className="text-xs px-3.5 py-2 bg-purple-50 text-purple-600 rounded-xl border border-purple-100 hover:bg-purple-500 hover:text-white hover:border-purple-500 transition-all duration-200 disabled:opacity-50 active:scale-95"
             >
-              📅 {t('monthly_performance')}
+              {t('monthly_performance')}
             </button>
           </div>
         </div>
@@ -227,33 +248,33 @@ export default function DashboardPage() {
             onChange={(e) => setCustomPrompt(e.target.value)}
             disabled={aiLoading}
             placeholder={t('custom_report_prompt')}
-            className="flex-1 bg-background border border-purple-500/20 rounded-xl px-3 py-2.5 text-xs outline-none focus:ring-2 ring-purple-500/40 placeholder:text-muted-foreground"
+            className="flex-1 bg-gray-50 border border-gray-100 rounded-xl px-3.5 py-2.5 text-xs outline-none focus:ring-2 ring-purple-300/40 focus:border-purple-200 placeholder:text-gray-400 transition-all"
           />
           <button
             type="submit"
             disabled={aiLoading || !customPrompt.trim()}
-            className="bg-purple-600 text-white text-xs font-semibold px-4 py-2 rounded-xl hover:bg-purple-700 transition disabled:opacity-50"
+            className="bg-purple-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl hover:bg-purple-600 transition-all duration-200 disabled:opacity-50 active:scale-95 shadow-sm shadow-purple-500/20"
           >
             {t('generate_ai_report')}
           </button>
         </form>
 
         {aiLoading && (
-          <div className="flex flex-col items-center gap-3 py-6">
-            <div className="w-8 h-8 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
-            <p className="text-sm text-muted-foreground">{t('generating')}</p>
+          <div className="flex flex-col items-center gap-3 py-8">
+            <div className="w-8 h-8 border-[3px] border-purple-200 border-t-purple-500 rounded-full animate-spin" />
+            <p className="text-sm text-gray-400">{t('generating')}</p>
           </div>
         )}
 
         {aiReport && !aiLoading && (
-          <div className="flex flex-col gap-4">
-            <div className="bg-background rounded-xl p-4 text-xs leading-relaxed whitespace-pre-wrap border select-text">
+          <div className="flex flex-col gap-4 d1-fade-in-up">
+            <div className="bg-gray-50 rounded-xl p-4 text-xs leading-relaxed whitespace-pre-wrap border border-gray-100 select-text text-gray-600">
               {aiReport}
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => window.print()}
-                className="flex items-center gap-2 px-4 py-2 bg-muted text-muted-foreground rounded-xl text-xs hover:text-foreground transition"
+                className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-500 rounded-xl text-xs hover:text-gray-700 hover:bg-gray-100 transition-all active:scale-95 border border-gray-100"
               >
                 <Printer size={15} />
                 {t('print')}
@@ -263,44 +284,47 @@ export default function DashboardPage() {
         )}
       </div>
 
+      {/* ── Excel Export Modal ──────────────────────────────── */}
       {showExcelModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowExcelModal(false)} />
-          <div className="relative w-full max-w-sm bg-background border rounded-2xl shadow-xl flex flex-col overflow-hidden" dir={dir}>
-            <div className="flex items-center justify-between p-4 border-b bg-muted/30">
-              <div className="flex items-center gap-2">
-                <Calendar size={18} className="text-primary" />
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm d1-backdrop-in" onClick={() => setShowExcelModal(false)} />
+          <div className="relative w-full max-w-sm bg-white border border-gray-100 rounded-2xl shadow-2xl flex flex-col overflow-hidden d1-scale-in" dir={dir}>
+            <div className="flex items-center justify-between p-5 border-b border-gray-50">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
+                  <Calendar size={18} className="text-emerald-500" />
+                </div>
                 <h3 className="font-bold">{t('export_excel')}</h3>
               </div>
-              <button onClick={() => setShowExcelModal(false)} className="p-1 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition">
+              <button onClick={() => setShowExcelModal(false)} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-50 transition-all active:scale-90">
                 <X size={18} />
               </button>
             </div>
-            <form onSubmit={handleExport} className="p-4 flex flex-col gap-4">
+            <form onSubmit={handleExport} className="p-5 flex flex-col gap-4">
               <div>
-                <label className="text-xs text-muted-foreground block mb-1">{t('start_date')}</label>
+                <label className="text-xs text-gray-400 block mb-1.5 font-medium">{t('start_date')}</label>
                 <input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full bg-muted border border-transparent rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 ring-primary transition cursor-pointer"
+                  className="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 ring-[#00A89B]/20 transition cursor-pointer"
                 />
               </div>
 
               <div>
-                <label className="text-xs text-muted-foreground block mb-1">{t('end_date')}</label>
+                <label className="text-xs text-gray-400 block mb-1.5 font-medium">{t('end_date')}</label>
                 <input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full bg-muted border border-transparent rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 ring-primary transition cursor-pointer"
+                  className="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 ring-[#00A89B]/20 transition cursor-pointer"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={exporting}
-                className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-xl font-semibold hover:opacity-90 disabled:opacity-50 transition"
+                className="w-full flex items-center justify-center gap-2 bg-[#00A89B] text-white py-3 rounded-xl font-semibold hover:bg-[#00A89B]/90 disabled:opacity-50 transition-all active:scale-95 shadow-md shadow-[#00A89B]/20"
               >
                 <Download size={18} />
                 {exporting ? t('loading') : t('export_excel')}

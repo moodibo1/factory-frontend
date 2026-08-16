@@ -109,33 +109,33 @@ export default function AdminPage() {
   const approvedUsers = users.filter(u => u.status === 'approved')
 
   return (
-    <div className="flex flex-col gap-4 py-4 pb-24">
+    <div className="flex flex-col gap-6 py-6">
       {/* Back button and header */}
       <div className="flex items-center gap-3">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 rounded-xl hover:bg-muted transition-colors"
+          className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
           title={t('back')}
         >
           <ArrowLeft size={20} className="rtl:rotate-0 ltr:rotate-180" />
         </button>
-        <h1 className="text-2xl font-bold">{t('management')}</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('management')}</h1>
       </div>
 
-      <div className="flex rounded-xl overflow-hidden border bg-card">
+      <div className="flex rounded-xl p-1 bg-gray-100 border border-gray-200">
         {tabs.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
             className={clsx(
-              'relative flex-1 py-2.5 text-xs font-medium flex items-center justify-center gap-1.5 transition',
-              tab === t.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted/50'
+              'flex-1 py-2.5 text-sm font-semibold flex items-center justify-center gap-2 transition-all rounded-lg',
+              tab === t.id ? 'bg-white text-[#00A89B] shadow-sm' : 'text-gray-500 hover:text-gray-900'
             )}
           >
-            <t.icon size={15} />
+            <t.icon size={16} />
             {t.label}
             {t.id === 'pending' && pendingUsers.length > 0 && (
-              <span className="absolute top-1 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
             )}
           </button>
         ))}
@@ -143,73 +143,53 @@ export default function AdminPage() {
 
       {loading ? (
         <div className="flex flex-col gap-3">
-          {[1,2,3].map(i => <div key={i} className="border rounded-2xl h-16 bg-muted animate-pulse" />)}
+          {[1,2,3].map(i => <div key={i} className="border rounded-xl h-20 bg-gray-100 animate-pulse" />)}
         </div>
       ) : tab === 'users' ? (
-        <div className="flex flex-col gap-3">
-          {approvedUsers.map((user) => {
-            const isMe = user.id === currentUser?.id
-            const isAdmin = user.role === 'admin'
-            const busy = actionLoading === user.id
-
-            return (
-              <div key={user.id} className="border rounded-2xl p-4 flex items-center justify-between bg-background">
-                <div className="flex flex-col min-w-0">
-                  <div className="flex items-center gap-1">
-                    <span className="font-semibold text-sm truncate">{user.name}</span>
-                    {isMe && <span className="text-xs text-muted-foreground">{t('you')}</span>}
-                    {isAdmin && <Crown size={12} className="text-purple-500 shrink-0" />}
-                  </div>
-                  <span className="text-xs text-muted-foreground truncate">{user.email}</span>
-                  <div className="flex items-center gap-1 mt-1">
-                    {user.category && catMap[user.category] && (
-                      <span className={clsx('text-[10px] px-2 py-0.5 rounded-full w-fit', catMap[user.category].class)}>
-                        {catMap[user.category].label}
+        <div className="overflow-hidden bg-white border border-gray-200 rounded-2xl shadow-sm">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="px-6 py-4 text-right font-semibold text-gray-700">User</th>
+                <th className="px-6 py-4 text-right font-semibold text-gray-700">Status</th>
+                <th className="px-6 py-4 text-right font-semibold text-gray-700">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {approvedUsers.map((user) => {
+                const isMe = user.id === currentUser?.id
+                const isAdmin = user.role === 'admin'
+                const busy = actionLoading === user.id
+                return (
+                  <tr key={user.id} className="hover:bg-gray-50/50 transition">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-teal-50 text-[#00A89B] flex items-center justify-center font-bold text-lg">
+                           {user.name?.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-gray-900">{user.name}</span>
+                          <span className="text-xs text-gray-500">{user.email}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={clsx('text-xs px-2.5 py-1 rounded-full font-medium', isAdmin ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600')}>
+                        {isAdmin ? t('system_admin') : t('normal_user')}
                       </span>
-                    )}
-                    <span className={clsx(
-                      'text-[10px] px-2 py-0.5 rounded-full w-fit',
-                      isAdmin ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-muted text-muted-foreground'
-                    )}>
-                      {isAdmin ? t('system_admin') : t('normal_user')}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <button
-                    onClick={() => setSelectedUser(user)}
-                    disabled={busy}
-                    className="p-2 rounded-xl text-blue-500 hover:bg-blue-500/10 transition disabled:opacity-40"
-                    title={t('permissions')}
-                  >
-                    <Settings2 size={17} />
-                  </button>
-                  {!isMe && (
-                    <>
-                      <button
-                        onClick={() => handleRoleToggle(user)}
-                        disabled={busy}
-                        className={clsx(
-                          'p-2 rounded-xl transition disabled:opacity-40',
-                          user.role === 'admin' ? 'text-purple-500 hover:bg-purple-500/20' : 'text-muted-foreground hover:bg-muted'
-                        )}
-                      >
-                        {user.role === 'admin' ? <ShieldOff size={17} /> : <ShieldCheck size={17} />}
-                      </button>
-                      <button
-                        onClick={() => handleDeleteUser(user.id)}
-                        disabled={busy}
-                        className="p-2 rounded-xl text-destructive hover:bg-destructive/10 transition disabled:opacity-40"
-                        title={t('delete')}
-                      >
-                        <Trash2 size={17} />
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            )
-          })}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => setSelectedUser(user)} className="p-2 text-gray-400 hover:text-[#00A89B] transition"><Settings2 size={16} /></button>
+                        <button onClick={() => handleRoleToggle(user)} className="p-2 text-gray-400 hover:text-purple-600 transition">{isAdmin ? <ShieldOff size={16} /> : <ShieldCheck size={16} />}</button>
+                        <button onClick={() => handleDeleteUser(user.id)} className="p-2 text-gray-400 hover:text-red-600 transition"><Trash2 size={16} /></button>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
         </div>
       ) : tab === 'pending' ? (
         <div className="flex flex-col gap-3">

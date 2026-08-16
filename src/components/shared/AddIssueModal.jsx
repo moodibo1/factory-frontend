@@ -18,9 +18,9 @@ export default function AddIssueModal({ onClose, onSuccess }) {
 
   // Issue types with translations
   const types = [
-    { value: 'problem', label: t('problem'), class: 'border-orange-500 text-orange-500' },
-    { value: 'note', label: t('note'), class: 'border-blue-500 text-blue-500' },
-    { value: 'emergency', label: t('emergency'), class: 'border-red-500 text-red-500' },
+    { value: 'problem', label: t('problem'), activeClass: 'border-amber-400 bg-amber-50 text-amber-600' },
+    { value: 'note', label: t('note'), activeClass: 'border-blue-400 bg-blue-50 text-blue-600' },
+    { value: 'emergency', label: t('emergency'), activeClass: 'border-red-400 bg-red-50 text-red-600' },
   ]
 
   // Default category depends on where the user is
@@ -88,12 +88,12 @@ export default function AddIssueModal({ onClose, onSuccess }) {
       formData.append('title', title)
       formData.append('description', description)
       formData.append('type', type)
-      
+
       // Ensure we always have valid non-empty arrays
       const catsToSubmit = selectedCategories.length > 0 ? selectedCategories : [defaultCategory]
       formData.append('category', catsToSubmit[0])
       formData.append('categories', JSON.stringify(catsToSubmit))
-      
+
       console.log('Publishing payload:', { title, type, catsToSubmit })
 
       if (file) formData.append('file', file)
@@ -108,14 +108,18 @@ export default function AddIssueModal({ onClose, onSuccess }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-      <div 
-        className="bg-background w-full max-w-md rounded-2xl p-6 flex flex-col gap-4 overflow-y-auto"
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm d1-backdrop-in" onClick={onClose} />
+
+      {/* Modal */}
+      <div
+        className="relative bg-white w-full max-w-md rounded-2xl p-6 flex flex-col gap-4 overflow-y-auto shadow-2xl d1-scale-in border border-gray-100"
         style={{ maxHeight: 'calc(100svh - 2rem)' }}
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold">{t('add_new')}</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+          <h2 className="text-lg font-extrabold tracking-tight">{t('add_new')}</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-all active:scale-90 p-1 rounded-lg hover:bg-gray-50">
             <X size={22} />
           </button>
         </div>
@@ -123,19 +127,19 @@ export default function AddIssueModal({ onClose, onSuccess }) {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {/* Issue Type Selection */}
           <div className="flex flex-col gap-2">
-            <p className="text-xs text-muted-foreground font-semibold">{t('report_type')}:</p>
+            <p className="text-xs text-gray-400 font-semibold">{t('report_type')}:</p>
             <div className="flex gap-2">
-              {types.map((t) => (
+              {types.map((tp) => (
                 <button
                   type="button"
-                  key={t.value}
-                  onClick={() => setType(t.value)}
+                  key={tp.value}
+                  onClick={() => setType(tp.value)}
                   className={clsx(
-                    'flex-1 py-2 rounded-xl border-2 text-sm font-medium transition',
-                    type === t.value ? t.class + ' bg-muted' : 'border-border text-muted-foreground'
+                    'flex-1 py-2.5 rounded-xl border-2 text-sm font-semibold transition-all duration-200 active:scale-95',
+                    type === tp.value ? tp.activeClass : 'border-gray-100 text-gray-400 hover:border-gray-200'
                   )}
                 >
-                  {t.label}
+                  {tp.label}
                 </button>
               ))}
             </div>
@@ -148,13 +152,13 @@ export default function AddIssueModal({ onClose, onSuccess }) {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
-            className="w-full bg-muted rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-primary"
+            className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-[#00A89B]/20 focus:border-[#00A89B]/30 transition-all"
           />
 
           {/* Admin Category Selection */}
           {isAdmin && (
             <div className="flex flex-col gap-2">
-              <p className="text-xs text-muted-foreground font-semibold">
+              <p className="text-xs text-gray-400 font-semibold">
                 {t('publish_in')} {t('admins_only')}:
               </p>
               <div className="flex gap-2">
@@ -168,8 +172,10 @@ export default function AddIssueModal({ onClose, onSuccess }) {
                     type="button"
                     onClick={() => toggleCategory(c.id)}
                     className={clsx(
-                      "px-3 py-1.5 rounded-full text-xs font-medium border transition",
-                      selectedCategories.includes(c.id) ? "bg-primary text-primary-foreground border-primary" : "text-muted-foreground border-border hover:bg-muted"
+                      "px-3.5 py-1.5 rounded-xl text-xs font-medium border transition-all duration-200 active:scale-95",
+                      selectedCategories.includes(c.id)
+                        ? "bg-[#00A89B] text-white border-[#00A89B] shadow-sm shadow-[#00A89B]/20"
+                        : "text-gray-400 border-gray-200 hover:border-[#00A89B]/40"
                     )}
                   >
                     {c.label}
@@ -185,13 +191,13 @@ export default function AddIssueModal({ onClose, onSuccess }) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
-            className="w-full bg-muted rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-primary resize-none"
+            className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-[#00A89B]/20 focus:border-[#00A89B]/30 transition-all resize-none"
           />
 
           {/* Media Upload */}
           <div className="flex flex-col gap-2">
-            <p className="text-xs text-muted-foreground font-semibold">{t('media_attachment')}:</p>
-            <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-border rounded-xl p-6 cursor-pointer hover:bg-muted transition">
+            <p className="text-xs text-gray-400 font-semibold">{t('media_attachment')}:</p>
+            <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-200 rounded-xl p-6 cursor-pointer hover:bg-gray-50/50 hover:border-[#00A89B]/30 transition-all duration-200">
               {preview ? (
                 mediaType === 'video' ? (
                   <video src={preview} className="w-full h-40 object-cover rounded-lg" controls />
@@ -200,28 +206,28 @@ export default function AddIssueModal({ onClose, onSuccess }) {
                 )
               ) : (
                 <>
-                  <div className="flex gap-3 text-muted-foreground">
+                  <div className="flex gap-3 text-gray-300">
                     <ImageIcon size={24} />
                     <Video size={24} />
                   </div>
-                  <span className="text-sm text-muted-foreground">{t('upload_image_video')}</span>
+                  <span className="text-sm text-gray-400">{t('upload_image_video')}</span>
                 </>
               )}
               <input type="file" accept="image/jpeg,image/jpg,image/png,image/webp,video/mp4,video/quicktime" className="hidden" onChange={handleFile} />
             </label>
-            <p className="text-xs text-muted-foreground -mt-1">
+            <p className="text-xs text-gray-300 -mt-1">
               {t('allowed_types')} | {t('max_limits')}
             </p>
           </div>
 
           {/* Error Message */}
-          {error && <p className="text-sm text-destructive text-center">{error}</p>}
+          {error && <p className="text-sm text-red-500 text-center bg-red-50 py-2 rounded-xl">{error}</p>}
 
           {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50"
+            className="w-full bg-[#00A89B] text-white py-3 rounded-xl font-semibold hover:bg-[#00A89B]/90 transition-all duration-200 disabled:opacity-50 active:scale-[0.98] shadow-md shadow-[#00A89B]/20"
           >
             {loading ? t('loading') : t('publish')}
           </button>
