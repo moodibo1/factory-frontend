@@ -7,7 +7,7 @@ export default function HomePage() {
   const { t, i18n } = useTranslation()
   const lang = i18n.language?.substring(0, 2) || 'ar'
   const appName = lang === 'ar' ? 'ديوان' : 'D1'
-  const welcomeText = lang === 'ar' ? 'مركز إدارة وتتبع الإشكاليات في خطوط الإنتاج' : 'Production line issue tracking & management center'
+  const welcomeText = lang === 'ar' ? ' انشر. شارك. حل المشاكل.' : 'Publish. Share. Solve problems.'
 
   const categories = [
     {
