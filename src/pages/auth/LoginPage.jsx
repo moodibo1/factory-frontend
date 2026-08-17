@@ -92,7 +92,7 @@ export default function LoginPage() {
           </div>
           <div className="text-center">
             <h1 className="text-2xl font-extrabold tracking-tight">D1</h1>
-            <p className="text-sm text-gray-400 mt-0.5">National Factory System</p>
+            <p className="text-sm text-gray-400 mt-0.5">National health Factory System</p>
           </div>
         </div>
 
