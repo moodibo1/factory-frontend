@@ -111,6 +111,10 @@ const resources = {
       view_image: 'عرض الصورة',
       print_issue: 'طباعة السجل',
       advance_status: 'تقديم الحالة',
+      opened_at: 'فُتح',
+      moved_to_progress: 'بدأ التنفيذ',
+      closed_at_label: 'أُغلق',
+      duration_open: 'مدة الفتح',
 
       // ── Add Issue Modal ──────────────────────────────────────
       add_new: 'إضافة سجل جديد',
@@ -319,6 +323,10 @@ const resources = {
       view_image: 'View Image',
       print_issue: 'Print Record',
       advance_status: 'Advance Status',
+      opened_at: 'Opened',
+      moved_to_progress: 'Started',
+      closed_at_label: 'Closed',
+      duration_open: 'Open duration',
 
       // ── Add Issue Modal ──────────────────────────────────────
       add_new: 'Add New Record',
@@ -527,6 +535,10 @@ const resources = {
       view_image: 'Resmi Görüntüle',
       print_issue: 'Kaydı Yazdır',
       advance_status: 'Durumu Güncelle',
+      opened_at: 'Açıldı',
+      moved_to_progress: 'Başladı',
+      closed_at_label: 'Kapatıldı',
+      duration_open: 'Açık süresi',
 
       // ── Add Issue Modal ──────────────────────────────────────
       add_new: 'Yeni Kayıt Ekle',
