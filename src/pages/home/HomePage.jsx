@@ -19,10 +19,10 @@ export default function HomePage() {
       iconBg: 'bg-gradient-to-br from-teal-50 to-cyan-50',
     },
     {
-      id: 'filling',
-      label: t('filling'),
+      id: 'secondary_packaging',
+      label: t('secondary_packaging'),
       icon: Package,
-      description: lang === 'ar' ? 'خطوط التعبئة والتغليف' : 'Filling & packaging lines',
+      description: lang === 'ar' ? 'خطوط التعبئة والتغليف' : 'secondry packaging lines',
       gradient: 'from-blue-500/10 to-indigo-500/8',
       iconBg: 'bg-gradient-to-br from-blue-50 to-indigo-50',
     },

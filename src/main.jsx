@@ -7,7 +7,7 @@ import { IssuesProvider } from '@/store/IssuesContext'
 import { AuthProvider } from '@/store/AuthContext'
 import './i18n'
 import './index.css'
-import './security.css'
+
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

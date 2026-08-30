@@ -21,7 +21,7 @@ const resources = {
       main_sections: 'الأقسام الرئيسية',
       production: 'الإنتاج',
       labs: 'المختبرات',
-      filling: 'التعبئة',
+      secondary_packaging: 'التعبئة',
       packaging: 'التغليف',
 
       // ── Dashboard & Analytics ────────────────────────────────
@@ -233,7 +233,7 @@ const resources = {
       main_sections: 'Main Sections',
       production: 'Production',
       labs: 'Labs',
-      filling: 'Filling',
+      secondary_packaging: 'Secondary Packaging',
       packaging: 'Packaging',
 
       // ── Dashboard & Analytics ────────────────────────────────
@@ -445,7 +445,7 @@ const resources = {
       main_sections: 'Ana Bölümler',
       production: 'Üretim',
       labs: 'Laboratuvarlar',
-      filling: 'Dolum',
+      secondary_packaging: 'Dolum',
       packaging: 'Ambalaj',
 
       // ── Dashboard & Analytics ────────────────────────────────
