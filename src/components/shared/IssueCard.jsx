@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { clsx } from 'clsx'
-import { ImageOff, Clock , X, MessageCircle, Send, ChevronRight, Trash2, Archive, ZoomIn,  Printer, Share2 } from 'lucide-react'
+import clsx from 'clsx'
+import { MessageCircle, Send, ChevronRight, Trash2, Archive, ZoomIn, Printer, Share2, Clock, Edit3, X } from 'lucide-react'
 import { issuesService, adminService } from '@/services/api'
 import { useAuth } from '@/store/AuthContext'
 import { useTranslation } from 'react-i18next'
@@ -42,10 +42,15 @@ export default function IssueCard({ issue, onUpdate, style }) {
   const [cycling, setCycling] = useState(false)
   const [showImage, setShowImage] = useState(false)
   const [imageError, setImageError] = useState(false)
-  const [showShareModal, setShowShareModal] = useState(false)
-  const [sharing, setSharing] = useState(false)
+    const [showShareModal, setShowShareModal] = useState(false)
+    const [sharing, setSharing] = useState(false)
+    const [showEditModal, setShowEditModal] = useState(false)
+    const [editing, setEditing] = useState(false)
 
-  const [selectedCategories, setSelectedCategories] = useState(issue.categories || [issue.category])
+    const [selectedCategories, setSelectedCategories] = useState(issue.categories || [issue.category])
+    
+    // Check if current user is the creator (issue from backend has 'creator' object)
+    const isCreator = Boolean(user?.id && issue?.creator?.id && String(user.id) === String(issue.creator.id))
 
   const typeMap = {
     problem: { label: t('problem') },
@@ -219,42 +224,55 @@ export default function IssueCard({ issue, onUpdate, style }) {
 
         {/* Body */}
         <div className="p-4 sm:p-5 flex flex-col gap-3">
-          {/* Badges row */}
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span className={clsx(
-                'text-[11px] px-2.5 py-1 rounded-full font-semibold border transition-all',
-                getTypeStyle(issue.type)
-              )}>
-                {typeInfo.label}
-              </span>
-              <span className={clsx(
-                'text-[11px] px-2.5 py-1 rounded-full font-semibold',
-                getStatusStyle(issue.status)
-              )}>
-                {statusInfo.label}
-              </span>
-            </div>
+                {/* Badges row & Top-Right Actions */}
+                <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                        <span className={clsx(
+                            'text-[11px] px-2.5 py-1 rounded-full font-semibold border transition-all',
+                            getTypeStyle(issue.type)
+                        )}>
+                            {typeInfo.label}
+                        </span>
+                        <span className={clsx(
+                            'text-[11px] px-2.5 py-1 rounded-full font-semibold',
+                            getStatusStyle(issue.status)
+                        )}>
+                            {statusInfo.label}
+                        </span>
+                    </div>
 
-            {/* Admin actions */}
-            {isAdmin && (
-              <div className="flex flex-wrap items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
-                <button onClick={() => setShowShareModal(true)} className="p-1.5 rounded-lg text-gray-400 hover:text-[#00A89B] hover:bg-[#00A89B]/8 transition-all active:scale-90" title="Share">
-                  <Share2 size={14} />
-                </button>
-                <button onClick={handlePrint} className="p-1.5 rounded-lg text-gray-400 hover:text-[#00A89B] hover:bg-[#00A89B]/8 transition-all active:scale-90" title="Print">
-                  <Printer size={14} />
-                </button>
-                <button
-                  onClick={handleCycleStatus}
-                  disabled={cycling}
-                  className="text-[10px] px-2 py-1 rounded-lg border border-dashed border-gray-300 text-gray-400 hover:text-[#00A89B] hover:border-[#00A89B]/40 transition-all active:scale-90 disabled:opacity-50"
-                >
-                  {statusInfo.next} <ChevronRight size={10} className="inline rtl:rotate-180" />
-                </button>
-              </div>
-            )}
-          </div>
+                    <div className="flex items-center gap-1">
+                        {/* Edit button - Visible and Prominent for Creator */}
+                        {isCreator && (
+                            <button 
+                                onClick={() => setShowEditModal(true)}
+                                className="p-1.5 rounded-full text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all active:scale-90" 
+                                title={t('edit', { defaultValue: 'تحرير' })}
+                            >
+                                <Edit3 size={16} />
+                            </button>
+                        )}
+
+                        {/* Admin-only buttons - Only visible on hover for cleaner UI */}
+                        {isAdmin && (
+                            <div className="flex flex-wrap items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
+                                <button onClick={() => setShowShareModal(true)} className="p-1.5 rounded-lg text-gray-400 hover:text-[#00A89B] hover:bg-[#00A89B]/8 transition-all active:scale-90" title="Share">
+                                    <Share2 size={14} />
+                                </button>
+                                <button onClick={handlePrint} className="p-1.5 rounded-lg text-gray-400 hover:text-[#00A89B] hover:bg-[#00A89B]/8 transition-all active:scale-90" title="Print">
+                                    <Printer size={14} />
+                                </button>
+                                <button
+                                    onClick={handleCycleStatus}
+                                    disabled={cycling}
+                                    className="text-[10px] px-2 py-1 rounded-lg border border-dashed border-gray-300 text-gray-400 hover:text-[#00A89B] hover:border-[#00A89B]/40 transition-all active:scale-90 disabled:opacity-50"
+                                >
+                                    {statusInfo.next} <ChevronRight size={10} className="inline rtl:rotate-180" />
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
 
           {/* Title */}
           <h3 className="font-bold text-[15px] text-gray-900 leading-snug">{issue.title}</h3>
@@ -407,7 +425,7 @@ export default function IssueCard({ issue, onUpdate, style }) {
               </button>
             </div>
             <div className="flex gap-2 flex-wrap">
-              {['lab', 'filling', 'production'].map(cat => (
+                    {['lab', 'secondary_packaging', 'production'].map(cat => (
                 <button
                   key={cat}
                   onClick={() => {
@@ -438,8 +456,124 @@ export default function IssueCard({ issue, onUpdate, style }) {
           </div>
         </div>
       )}
-    </>
-  )
+        {/* Edit Modal --------------------------------------- */}
+        {showEditModal && (
+            <EditIssueModal
+                issue={issue}
+                onClose={() => setShowEditModal(false)}
+                onUpdate={onUpdate}
+            />
+        )}
+
+        </>
+    )
+}
+
+// Edit Issue Modal Component
+function EditIssueModal({ issue, onClose, onUpdate }) {
+    const { t } = useTranslation()
+    const [title, setTitle] = useState(issue.title || '')
+    const [description, setDescription] = useState(issue.description || '')
+    const [type, setType] = useState(issue.type || 'problem')
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState('')
+
+    const types = [
+        { value: 'problem', label: t('problem'), activeClass: 'border-amber-400 bg-amber-50 text-amber-600' },
+        { value: 'note', label: t('note'), activeClass: 'border-blue-400 bg-blue-50 text-blue-600' },
+        { value: 'emergency', label: t('emergency'), activeClass: 'border-red-400 bg-red-50 text-red-600' }
+    ]
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        if (!title.trim()) return
+        
+        setLoading(true)
+        setError('')
+        
+        try {
+            const updateData = {
+                title: title.trim(),
+                description: description || '',
+                type: type
+            }
+            
+            const updatedIssue = await issuesService.updateIssue(issue.id, updateData)
+            onUpdate && onUpdate(updatedIssue)
+            onClose()
+        } catch (err) {
+            setError(err.message || t('error'))
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+            <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-bold">{t('edit_issue', { defaultValue: 'تحرير البلاغ' })}</h2>
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition active:scale-90 p-1 rounded-lg hover:bg-gray-50">
+                        <X size={20} />
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                    {/* Type Selection */}
+                    <div className="flex flex-col gap-2">
+                        <p className="text-xs text-gray-400 font-semibold">{t('report_type')}:</p>
+                        <div className="flex gap-2">
+                            {types.map((tp) => (
+                                <button
+                                    type="button"
+                                    key={tp.value}
+                                    onClick={() => setType(tp.value)}
+                                    className={clsx(
+                                        'flex-1 py-2.5 rounded-xl border-2 text-sm font-semibold transition-all duration-200 active:scale-95',
+                                        type === tp.value ? tp.activeClass : 'border-gray-100 text-gray-400 hover:border-gray-200'
+                                    )}
+                                >
+                                    {tp.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Title Input */}
+                    <input
+                        type="text"
+                        placeholder={t('title_placeholder')}
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        required
+                        className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-[#00A89B]/20 focus:border-[#00A89B]/30 transition-all"
+                    />
+
+                    {/* Description Textarea */}
+                    <textarea
+                        placeholder={t('description_placeholder')}
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        rows={3}
+                        className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-[#00A89B]/20 focus:border-[#00A89B]/30 transition-all resize-none"
+                    />
+
+                    {/* Error Message */}
+                    {error && <p className="text-sm text-red-500 text-center bg-red-50 py-2 rounded-xl">{error}</p>}
+
+                    {/* Submit Button */}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full bg-[#00A89B] text-white py-3 rounded-xl font-semibold hover:bg-[#00A89B]/90 transition-all duration-200 disabled:opacity-50 active:scale-[0.98] shadow-md shadow-[#00A89B]/20"
+                    >
+                        {loading ? t('saving', { defaultValue: 'جاري الحفظ...' }) : t('save_changes', { defaultValue: 'حفظ التغييرات' })}
+                    </button>
+                </form>
+            </div>
+        </div>
+    )
 }
 
 

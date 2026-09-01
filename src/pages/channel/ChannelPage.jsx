@@ -32,11 +32,11 @@ export default function ChannelPage() {
   })()
 
   // Category names with translations
-  const categoryNames = {
-    lab: t('labs'),
-    filling: t('filling'),
-    production: t('production'),
-  }
+    const categoryNames = {
+        lab: t('labs'),
+        secondary_packaging: t('secondary_packaging'),
+        production: t('production')
+    }
 
   // Type options with translations
   const typeOptions = [

@@ -24,7 +24,7 @@ export default function AddIssueModal({ onClose, onSuccess }) {
   ]
 
   // Default category depends on where the user is
-  const defaultCategory = routeCategory || (user?.category !== 'admin' ? user?.category : 'lab') || 'lab'
+  const defaultCategory = routeCategory || (user?.categories?.length ? user.categories[0] : 'lab') || 'lab'
 
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -84,15 +84,15 @@ export default function AddIssueModal({ onClose, onSuccess }) {
     setLoading(true)
     setError('')
     try {
-      const formData = new FormData()
-      formData.append('title', title)
-      formData.append('description', description)
-      formData.append('type', type)
-
-      // Ensure we always have valid non-empty arrays
-      const catsToSubmit = selectedCategories.length > 0 ? selectedCategories : [defaultCategory]
-      formData.append('category', catsToSubmit[0])
-      formData.append('categories', JSON.stringify(catsToSubmit))
+                const formData = new FormData()
+                formData.append('title', title)
+                formData.append('description', description || '')
+                formData.append('type', type)
+                
+                // Ensure valid non-empty arrays
+                const catsToSubmit = selectedCategories.length > 0 ? selectedCategories : [defaultCategory]
+                formData.append('category', catsToSubmit[0])  // Primary category for legacy field
+                formData.append('categories', JSON.stringify(catsToSubmit))
 
       console.log('Publishing payload:', { title, type, catsToSubmit })
 
@@ -164,7 +164,7 @@ export default function AddIssueModal({ onClose, onSuccess }) {
               <div className="flex gap-2">
                 {[
                   { id: 'lab', label: t('labs') },
-                  { id: 'filling', label: t('filling') },
+                        { id: 'secondary_packaging', label: t('secondary_packaging') },
                   { id: 'production', label: t('production') }
                 ].map(c => (
                   <button

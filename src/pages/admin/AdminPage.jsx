@@ -32,13 +32,13 @@ export default function AdminPage() {
     { id: 'archive', label: t('archive'), icon: Archive },
   ]
   
-  // Category map with translations
+  // Category map with translations (تم تحديث الأقسام)
   const catMap = {
-    lab: { label: t('labs'), class: 'bg-purple-500/20 text-purple-500' },
-    labs: { label: t('labs'), class: 'bg-purple-500/20 text-purple-500' }, // Fallback
-    filling: { label: t('filling'), class: 'bg-orange-500/20 text-orange-500' },
-    production: { label: t('production'), class: 'bg-blue-500/20 text-blue-500' },
-    admin: { label: t('admin'), class: 'bg-red-500/20 text-red-500' },
+    lab: { label: t('labs'), class: 'bg-purple-500/20 text-purple-700' },
+        secondary_packaging: { label: t('secondary_packaging'), class: 'bg-orange-500/20 text-orange-700' },
+    production: { label: t('production'), class: 'bg-blue-500/20 text-blue-700' },
+    qc: { label: t('quality', { defaultValue: 'الجودة' }), class: 'bg-emerald-500/20 text-emerald-700' },
+    admin: { label: t('admin'), class: 'bg-red-500/20 text-red-700' },
   }
 
   const loadData = async () => {
@@ -83,10 +83,11 @@ export default function AdminPage() {
     }
   }
 
-  const handleApprove = async (category) => {
+  // تم التعديل لاستقبال مصفوفة أقسام بدلاً من قسم واحد
+  const handleApprove = async (categories) => {
     setActionLoading(approvingUser.id)
     try {
-      await adminService.approveUser(approvingUser.id, category)
+      await adminService.approveUser(approvingUser.id, categories)
       setApprovingUser(null)
       await loadData()
     } catch(err) {
@@ -110,7 +111,6 @@ export default function AdminPage() {
 
   return (
     <div className="flex flex-col gap-6 py-6">
-      {/* Back button and header */}
       <div className="flex items-center gap-3">
         <button
           onClick={() => navigate(-1)}
@@ -122,13 +122,13 @@ export default function AdminPage() {
         <h1 className="text-2xl font-bold text-gray-900">{t('management')}</h1>
       </div>
 
-      <div className="flex rounded-xl p-1 bg-gray-100 border border-gray-200">
+      <div className="flex rounded-xl p-1 bg-gray-100 border border-gray-200 overflow-x-auto">
         {tabs.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
             className={clsx(
-              'flex-1 py-2.5 text-sm font-semibold flex items-center justify-center gap-2 transition-all rounded-lg',
+              'flex-1 min-w-[100px] py-2.5 text-sm font-semibold flex items-center justify-center gap-2 transition-all rounded-lg',
               tab === t.id ? 'bg-white text-[#00A89B] shadow-sm' : 'text-gray-500 hover:text-gray-900'
             )}
           >
@@ -148,12 +148,10 @@ export default function AdminPage() {
       ) : tab === 'users' ? (
             <div className="flex flex-col gap-3">
               {approvedUsers.map((user) => {
-                const isMe = user.id === currentUser?.id
                 const isAdmin = user.role === 'admin'
-                const busy = actionLoading === user.id
                 return (
                   <div key={user.id} className="bg-white border border-gray-200 rounded-2xl p-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between shadow-sm hover:bg-gray-50/50 transition">
-                    <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
                       <div className="w-10 h-10 rounded-full bg-teal-50 text-[#00A89B] flex items-center justify-center font-bold text-lg shrink-0">
                         {user.name?.charAt(0).toUpperCase()}
                       </div>
@@ -161,10 +159,20 @@ export default function AdminPage() {
                         <span className="font-semibold text-gray-900 truncate">{user.name}</span>
                         <span className="text-xs text-gray-500 truncate">{user.email}</span>
                       </div>
-                      <span className={clsx('text-xs px-2.5 py-1 rounded-full font-medium shrink-0', isAdmin ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600')}>
-                        {isAdmin ? t('system_admin') : t('normal_user')}
-                      </span>
+                      
+                      {/* عرض الأقسام المتعددة كشارات ملونة */}
+                      <div className="flex gap-1 flex-wrap ms-4">
+                        <span className={clsx('text-[10px] px-2 py-1 rounded-md font-medium shrink-0 border', isAdmin ? 'bg-red-50 text-red-700 border-red-100' : 'bg-gray-50 text-gray-600 border-gray-200')}>
+                          {isAdmin ? t('system_admin') : t('normal_user')}
+                        </span>
+                        {user.categories?.map(cat => (
+                           <span key={cat} className={clsx('text-[10px] px-2 py-1 rounded-md font-medium shrink-0 border border-transparent', catMap[cat]?.class || 'bg-gray-100 text-gray-600')}>
+                             {catMap[cat]?.label || cat}
+                           </span>
+                        ))}
+                      </div>
                     </div>
+                    
                     <div className="flex items-center gap-2 shrink-0">
                       <button onClick={() => setSelectedUser(user)} className="p-2 text-gray-400 hover:text-[#00A89B] transition rounded-lg hover:bg-gray-100"><Settings2 size={18} /></button>
                       <button onClick={() => handleRoleToggle(user)} className="p-2 text-gray-400 hover:text-purple-600 transition rounded-lg hover:bg-gray-100">{isAdmin ? <ShieldOff size={18} /> : <ShieldCheck size={18} />}</button>
@@ -182,16 +190,16 @@ export default function AdminPage() {
             pendingUsers.map(user => {
               const busy = actionLoading === user.id
               return (
-                <div key={user.id} className="border rounded-2xl p-4 flex items-center justify-between bg-background">
+                <div key={user.id} className="border rounded-2xl p-4 flex items-center justify-between bg-white shadow-sm">
                   <div className="flex flex-col min-w-0">
                     <span className="font-semibold text-sm truncate">{user.name}</span>
                     <span className="text-xs text-muted-foreground truncate">{user.email}</span>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    <button onClick={() => setApprovingUser(user)} disabled={busy} className="p-2 text-green-600 hover:bg-green-600/10 rounded-xl transition disabled:opacity-50" title={t('approve')}>
+                    <button onClick={() => setApprovingUser(user)} disabled={busy} className="p-2 text-green-600 hover:bg-green-50 rounded-xl transition disabled:opacity-50" title={t('approve')}>
                       <CheckCircle size={20} />
                     </button>
-                    <button onClick={() => handleReject(user.id)} disabled={busy} className="p-2 text-destructive hover:bg-destructive/10 rounded-xl transition disabled:opacity-50" title={t('reject')}>
+                    <button onClick={() => handleReject(user.id)} disabled={busy} className="p-2 text-red-600 hover:bg-red-50 rounded-xl transition disabled:opacity-50" title={t('reject')}>
                       <XCircle size={20} />
                     </button>
                   </div>

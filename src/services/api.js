@@ -64,16 +64,23 @@ export const issuesService = {
     return apiRequest(`/issues/count?${params.toString()}`)
   },
 
-  async create(formData) {
-    const token = localStorage.getItem('token')
-    const res = await fetch(`${BASE_URL}/issues/`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData,
-    })
-    if (!res.ok) throw new Error('فشل إنشاء الإشكالية')
-    return res.json()
-  },
+    async create(formData) {
+        const token = localStorage.getItem('token')
+        const res = await fetch(`${BASE_URL}/issues/`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData,
+        })
+        if (!res.ok) throw new Error('فشل إنشاء الإشكالية')
+        return res.json()
+    },
+
+    async updateIssue(issueId, updateData) {
+        return apiRequest(`/issues/${issueId}`, {
+            method: 'PUT',
+            body: JSON.stringify(updateData),
+        })
+    },
 
   async close(issueId) {
     return apiRequest(`/issues/${issueId}/close`, { method: 'PATCH' })
@@ -161,10 +168,10 @@ export const adminService = {
       body: JSON.stringify({ role }),
     })
   },
-  async approveUser(userId, category) {
+  async approveUser(userId, categories) {
     return apiRequest(`/admin/users/${userId}/approve`, {
       method: 'POST',
-      body: JSON.stringify({ category })
+      body: JSON.stringify({ categories }) // 👈 التعديل هنا: نرسل المصفوفة بدلاً من القسم المفرد
     })
   },
   async rejectUser(userId) {

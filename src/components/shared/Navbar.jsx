@@ -7,14 +7,34 @@ import { useTranslation } from 'react-i18next'
 import { clsx } from 'clsx'
 
 export default function Navbar() {
-  const { pathname } = useLocation()
-  const { dark, toggle } = useTheme()
-  const { logout, user } = useAuth()
-  const navigate = useNavigate()
-  const isAdmin = user?.role === 'admin'
-  const { t, i18n } = useTranslation()
-  const lang = i18n.language?.substring(0, 2) || 'ar'
-  const appName = lang === 'ar' ? 'ديوان' : 'D1'
+    const { pathname } = useLocation()
+    const { dark, toggle } = useTheme()
+    const { logout, user } = useAuth()
+    const navigate = useNavigate()
+    const isAdmin = user?.role === 'admin'
+    const { t, i18n } = useTranslation()
+    const lang = i18n.language?.substring(0, 2) || 'ar'
+    const appName = lang === 'ar' ? 'ديوان' : 'D1'
+
+    // Category badge styles
+    const categoryStyles = {
+        lab: 'bg-purple-100 text-purple-700 border-purple-200',
+        secondary_packaging: 'bg-orange-100 text-orange-700 border-orange-200',
+        production: 'bg-blue-100 text-blue-700 border-blue-200',
+        qc: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+        admin: 'bg-red-100 text-red-700 border-red-200'
+    }
+
+    const getCategoryLabel = (category) => {
+        const labels = {
+            lab: t('labs'),
+            secondary_packaging: t('secondary_packaging'),
+            production: t('production'),
+            qc: t('quality', { defaultValue: 'الجودة' }),
+            admin: t('admin')
+        }
+        return labels[category] || category
+    }
 
   const handleLogout = () => {
     logout()
@@ -58,13 +78,32 @@ export default function Navbar() {
       <header className="sticky top-0 z-50 w-full d1-glass border-b border-white/40 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
 
-          {/* Brand */}
-          <Link to="/" className="group flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#00A89B] to-[#00D4C8] flex items-center justify-center shadow-md shadow-[#00A89B]/20 transition-transform duration-300 group-hover:scale-105 group-active:scale-95">
-              <span className="text-white font-extrabold text-sm tracking-tight">D1</span>
-            </div>
-            <span className="font-extrabold text-xl tracking-tight text-[#00A89B] hidden sm:block">{appName}</span>
-          </Link>
+        {/* Brand & User Categories */}
+        <div className="flex flex-col gap-1">
+            <Link to="/" className="group flex items-center gap-2">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#00A89B] to-[#00D4C8] flex items-center justify-center shadow-md shadow-[#00A89B]/20 transition-transform duration-300 group-hover:scale-105 group-active:scale-95">
+                    <span className="text-white font-extrabold text-sm tracking-tight">D1</span>
+                </div>
+                <span className="font-extrabold text-xl tracking-tight text-[#00A89B] hidden sm:block">{appName}</span>
+            </Link>
+            
+            {/* User Category Badges */}
+            {user?.categories && user.categories.length > 0 && (
+                <div className="hidden sm:flex items-center gap-1 ml-11">
+                    {user.categories.map((category) => (
+                        <span
+                            key={category}
+                            className={clsx(
+                                'px-2 py-0.5 text-xs font-medium rounded-md border',
+                                categoryStyles[category] || 'bg-gray-100 text-gray-600 border-gray-200'
+                            )}
+                        >
+                            {getCategoryLabel(category)}
+                        </span>
+                    ))}
+                </div>
+            )}
+        </div>
 
           <div className="flex items-center gap-1 sm:gap-2">
             {/* Desktop Nav Links */}

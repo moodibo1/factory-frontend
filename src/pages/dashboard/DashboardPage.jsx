@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { dashboardService, issuesService } from '@/services/api'
 import { AlertTriangle, CheckCircle, Clock, TrendingUp, Download, Printer, Sparkles, Copy, Check, Calendar, X, ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -102,7 +102,7 @@ export default function DashboardPage() {
 
   const barData = [
     { name: t('labs'), count: stats.by_category.lab },
-    { name: t('filling'), count: stats.by_category.filling },
+        { name: t('secondary_packaging'), count: stats.by_category.secondary_packaging },
     { name: t('production'), count: stats.by_category.production },
   ]
 
