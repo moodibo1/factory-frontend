@@ -1,10 +1,13 @@
 import { useNavigate } from 'react-router-dom'
 import { FlaskConical, Package, Factory } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useAuth } from '../../store/AuthContext' // <-- 1. استيراد بيانات المستخدم (تأكد من مسار الملف)
 
 export default function HomePage() {
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
+  const { user } = useAuth() // <-- 2. سحب كائن المستخدم الحالي
+
   const lang = i18n.language?.substring(0, 2) || 'ar'
   const appName = lang === 'ar' ? 'ديوان' : 'D1'
   const welcomeText = lang === 'ar' ? ' انشر. شارك. حل المشاكل.' : 'Publish. Share. Solve problems.'
@@ -36,6 +39,16 @@ export default function HomePage() {
     },
   ]
 
+  // <-- 3. فلترة الأقسام بناءً على صلاحيات المستخدم
+  const visibleCategories = categories.filter((cat) => {
+    if (!user) return false; // إخفاء الأقسام لو لم يتم تحميل المستخدم
+    if (user.role === 'admin') return true; // الأدمن يرى جميع الأقسام
+
+    // التأكد من أن الأقسام مصفوفة، ثم التحقق إذا كانت تحتوي على id القسم
+    const userCats = Array.isArray(user.categories) ? user.categories : [];
+    return userCats.includes(cat.id);
+  });
+
   return (
     <div className="flex flex-col gap-8 py-6">
       {/* ── Hero ─────────────────────────────────────────────── */}
@@ -65,7 +78,8 @@ export default function HomePage() {
 
       {/* ── Category Cards ───────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
-        {categories.map((cat, i) => (
+        {/* <-- 4. استبدال categories بـ visibleCategories في دالة الـ map */}
+        {visibleCategories.map((cat, i) => (
           <button
             key={cat.id}
             onClick={() => navigate(`/channel/${cat.id}`)}
