@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
-import { supabase } from '@/lib/supabaseClient'
 import { authService, apiRequest } from '@/services/api'
 
 // Constants
@@ -88,11 +87,11 @@ export function AuthProvider({ children }) {
   }, [])
 
   const forgotPassword = useCallback(async (email) => {
-    if (!supabase) throw new Error('Supabase is not configured.')
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    })
-    if (error) throw new Error(error.message)
+    await authService.requestReset(email)
+  }, [])
+
+  const verifyReset = useCallback(async (email, otp, newPassword) => {
+    await authService.verifyReset(email, otp, newPassword)
   }, [])
 
   const logout = useCallback(() => {
@@ -164,10 +163,11 @@ export function AuthProvider({ children }) {
       login,
       register,
       forgotPassword,
+      verifyReset,
       logout,
       isAuthenticated: !!user,
     }),
-    [user, loading, login, register, forgotPassword, logout]
+    [user, loading, login, register, forgotPassword, verifyReset, logout]
   )
 
   return (

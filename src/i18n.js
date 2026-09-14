@@ -173,6 +173,7 @@ const resources = {
       msg_send_error: 'حدث خطأ في الإرسال',
       msg_password_changed: 'تم تغيير كلمة المرور بنجاح.',
       msg_invalid_reset_code: 'الكود غير صحيح',
+      msg_code_expired: 'انتهت صلاحية الرمز. أعد الطلب مرة أخرى.',
 
       // ── Profile ──────────────────────────────────────────────
       open_tracking_records: 'سجلات مفتوحة للمتابعة',
@@ -385,6 +386,7 @@ const resources = {
       msg_send_error: 'An error occurred while sending.',
       msg_password_changed: 'Password changed successfully.',
       msg_invalid_reset_code: 'Invalid reset code.',
+      msg_code_expired: 'Code expired. Please request a new one.',
 
       // ── Profile ──────────────────────────────────────────────
       open_tracking_records: 'Open records',
@@ -597,6 +599,7 @@ const resources = {
       msg_send_error: 'Gönderilirken bir hata oluştu.',
       msg_password_changed: 'Şifre başarıyla değiştirildi.',
       msg_invalid_reset_code: 'Geçersiz sıfırlama kodu.',
+      msg_code_expired: 'Kodun süresi doldu. Lütfen yeni bir tane isteyin.',
 
       // ── Profile ──────────────────────────────────────────────
       open_tracking_records: 'Açık kayıtlar',

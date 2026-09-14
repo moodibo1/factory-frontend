@@ -45,6 +45,20 @@ export const authService = {
       body: JSON.stringify({ name, email, password }),
     })
   },
+
+  async requestReset(email) {
+    return apiRequest('/auth/request-reset', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    })
+  },
+
+  async verifyReset(email, otp, new_password) {
+    return apiRequest('/auth/verify-reset', {
+      method: 'POST',
+      body: JSON.stringify({ email, otp, new_password }),
+    })
+  },
 }
 
 export const issuesService = {

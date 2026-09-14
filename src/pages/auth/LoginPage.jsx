@@ -1,11 +1,11 @@
 ﻿import { useState } from 'react'
 import { useAuth } from '@/store/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import { Eye, Factory, KeyRound, X, Check, EyeOff, Globe } from 'lucide-react'
+import { Eye, Factory, KeyRound, Check, EyeOff, Globe, ShieldCheck } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 export default function LoginPage() {
-  const { login, register, forgotPassword } = useAuth()
+  const { login, register, forgotPassword, verifyReset } = useAuth()
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
   const [isLogin, setIsLogin] = useState(true)
@@ -21,6 +21,11 @@ export default function LoginPage() {
   const [forgotError, setForgotError] = useState('')
   const [forgotLoading, setForgotLoading] = useState(false)
   const [forgotSuccess, setForgotSuccess] = useState('')
+  // Step 2: OTP + new password
+  const [resetStep, setResetStep] = useState(1)
+  const [otpCode, setOtpCode] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [showNewPass, setShowNewPass] = useState(false)
 
   const changeLang = () => {
     const langs = ['ar', 'en', 'tr']
@@ -66,11 +71,50 @@ export default function LoginPage() {
     try {
       await forgotPassword(forgotEmail)
       setForgotSuccess(t('msg_code_sent'))
+      setResetStep(2)
     } catch {
       setForgotError(t('msg_send_error'))
     } finally {
       setForgotLoading(false)
     }
+  }
+
+  const handleVerifyReset = async (e) => {
+    e.preventDefault()
+    if (!otpCode || !newPassword) return
+    setForgotLoading(true)
+    setForgotError('')
+    setForgotSuccess('')
+    try {
+      await verifyReset(forgotEmail, otpCode, newPassword)
+      setForgotSuccess(t('msg_password_changed'))
+      // Auto-close after 2s
+      setTimeout(() => {
+        setShowForgot(false)
+        setResetStep(1)
+        setForgotEmail('')
+        setOtpCode('')
+        setNewPassword('')
+        setForgotSuccess('')
+      }, 2000)
+    } catch (err) {
+      const msg = err.message || ''
+      if (msg.includes('INVALID_CODE')) setForgotError(t('msg_invalid_reset_code'))
+      else if (msg.includes('CODE_EXPIRED')) setForgotError(t('msg_code_expired') || 'Code expired. Please request a new one.')
+      else setForgotError(t('msg_send_error'))
+    } finally {
+      setForgotLoading(false)
+    }
+  }
+
+  const closeForgotModal = () => {
+    setShowForgot(false)
+    setResetStep(1)
+    setForgotEmail('')
+    setOtpCode('')
+    setNewPassword('')
+    setForgotError('')
+    setForgotSuccess('')
   }
 
   return (
@@ -181,26 +225,31 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* ── Forgot Password Modal ──────────────────────────── */}
+
+      {/* Forgot Password Modal */}
       {showForgot && (
         <>
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 d1-backdrop-in" onClick={() => setShowForgot(false)} />
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 d1-backdrop-in" onClick={closeForgotModal} />
           <div className="fixed inset-0 z-50 flex items-center justify-center px-4" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
             <div className="w-full max-w-sm bg-white border border-gray-100 rounded-2xl p-6 flex flex-col gap-4 shadow-2xl d1-scale-in">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-teal-50 flex items-center justify-center">
-                    <KeyRound size={18} className="text-[#00A89B]" />
+                    {resetStep === 1 ? <KeyRound size={18} className="text-[#00A89B]" /> : <ShieldCheck size={18} className="text-[#00A89B]" />}
                   </div>
-                  <h2 className="font-bold">{t('forgot_password')}</h2>
+                  <h2 className="font-bold">{resetStep === 1 ? t('forgot_password') : t('reset_password')}</h2>
                 </div>
-                <button type="button" onClick={() => setShowForgot(false)} className="text-gray-400 hover:text-gray-600 transition active:scale-90">
-                  <X size={18} />
+                <button type="button" onClick={closeForgotModal} className="text-gray-400 hover:text-gray-600 transition active:scale-90">
+                  &#x2715;
                 </button>
               </div>
-              {forgotSuccess ? (
+
+              {forgotSuccess && (
                 <p className="text-sm text-emerald-500 bg-emerald-50 p-3 rounded-xl">{forgotSuccess}</p>
-              ) : (
+              )}
+
+              {/* Step 1: Enter email */}
+              {resetStep === 1 && (
                 <form onSubmit={handleRequestReset} className="flex flex-col gap-3">
                   <p className="text-sm text-gray-400">{t('enter_email_for_recovery')}</p>
                   <input
@@ -221,6 +270,53 @@ export default function LoginPage() {
                   </button>
                 </form>
               )}
+
+              {/* Step 2: Enter OTP + new password */}
+              {resetStep === 2 && (
+                <form onSubmit={handleVerifyReset} className="flex flex-col gap-3">
+                  <p className="text-sm text-gray-400">{t('enter_code')}</p>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    placeholder={t('recovery_code')}
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    required
+                    className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm text-center tracking-[0.4em] font-mono text-lg outline-none focus:ring-2 ring-[#00A89B]/20 transition-all"
+                    autoFocus
+                  />
+                  <div className="relative">
+                    <input
+                      type={showNewPass ? 'text' : 'password'}
+                      placeholder={t('new_password')}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      required
+                      className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-[#00A89B]/20 transition-all rtl:pl-10 ltr:pr-10"
+                    />
+                    <button type="button" onClick={() => setShowNewPass(v => !v)} className="absolute rtl:left-3 ltr:right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition active:scale-90">
+                      {showNewPass ? <EyeOff size={17} /> : <Eye size={17} />}
+                    </button>
+                  </div>
+                  {forgotError && <p className="text-xs text-red-500 text-center">{forgotError}</p>}
+                  <button
+                    type="submit"
+                    disabled={forgotLoading}
+                    className="w-full bg-[#00A89B] text-white py-3 rounded-xl font-semibold hover:bg-[#00A89B]/90 mt-1 transition-all active:scale-[0.98] shadow-md shadow-[#00A89B]/20"
+                  >
+                    {forgotLoading ? t('loading') : t('reset_password')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setResetStep(1); setForgotError(''); setForgotSuccess(''); setOtpCode(''); setNewPassword('') }}
+                    className="text-xs text-gray-400 hover:text-[#00A89B] transition text-center"
+                  >
+                    {t('send_code')} &#x21BB;
+                  </button>
+                </form>
+              )}
+
             </div>
           </div>
         </>
