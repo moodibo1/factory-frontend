@@ -1,4 +1,4 @@
-import i18n from 'i18next'
+﻿import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 
@@ -128,6 +128,9 @@ const resources = {
       file_type_error: 'نوع الملف غير مسموح. يُسمح فقط بـ JPG, PNG, WEBP, MP4, MOV',
       file_size_video_error: 'حجم الفيديو كبير جداً. الحد الأقصى هو 50MB',
       file_size_image_error: 'حجم الصورة كبير جداً. الحد الأقصى هو 10MB',
+      compressing_image: 'جاري ضغط الصورة...',
+      compressed: 'تم الضغط',
+      saved: 'وفّر',
 
       // ── Channel / Filter ─────────────────────────────────────
       filter: 'تصفية',
@@ -341,6 +344,9 @@ const resources = {
       file_type_error: 'File type not allowed. Only JPG, PNG, WEBP, MP4, MOV are permitted.',
       file_size_video_error: 'Video is too large. Maximum size is 50MB.',
       file_size_image_error: 'Image is too large. Maximum size is 10MB.',
+      compressing_image: 'Compressing image...',
+      compressed: 'Compressed',
+      saved: 'Saved',
 
       // ── Channel / Filter ─────────────────────────────────────
       filter: 'Filter',
@@ -554,6 +560,9 @@ const resources = {
       file_type_error: 'Dosya türüne izin verilmiyor. Yalnızca JPG, PNG, WEBP, MP4, MOV\'e izin verilir.',
       file_size_video_error: 'Video çok büyük. Maksimum boyut 50MB\'dir.',
       file_size_image_error: 'Resim çok büyük. Maksimum boyut 10MB\'dir.',
+      compressing_image: 'Resim sıkıştırılıyor...',
+      compressed: 'Sıkıştırıldı',
+      saved: 'Tasarruf',
 
       // ── Channel / Filter ─────────────────────────────────────
       filter: 'Filtrele',

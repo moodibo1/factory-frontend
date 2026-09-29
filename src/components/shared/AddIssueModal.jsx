@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { X, ImageIcon, Video } from 'lucide-react'
+import { ImageIcon, Video, Loader2, X } from 'lucide-react'
 import { issuesService } from '@/services/api'
 import { useParams } from 'react-router-dom'
-import { clsx } from 'clsx'
+import clsx from 'clsx'
 import { useAuth } from '@/store/AuthContext'
 import { useTranslation } from 'react-i18next'
+import { compressImage, formatFileSize } from '@/lib/imageCompression'
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'video/mp4', 'video/quicktime']
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024  // 10MB
@@ -23,7 +24,7 @@ export default function AddIssueModal({ onClose, onSuccess }) {
     { value: 'emergency', label: t('emergency'), activeClass: 'border-red-400 bg-red-50 text-red-600' },
   ]
 
-  // Default category depends on where the user is
+  // Default category depends on where user is
   const defaultCategory = routeCategory || (user?.categories?.length ? user.categories[0] : 'lab') || 'lab'
 
   const [title, setTitle] = useState('')
@@ -34,6 +35,11 @@ export default function AddIssueModal({ onClose, onSuccess }) {
   const [mediaType, setMediaType] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // Compression states
+  const [compressing, setCompressing] = useState(false)
+  const [compressionProgress, setCompressionProgress] = useState(0)
+  const [compressionInfo, setCompressionInfo] = useState(null)
 
   // Admin cross-posting selections
   const [selectedCategories, setSelectedCategories] = useState([defaultCategory])
@@ -48,7 +54,7 @@ export default function AddIssueModal({ onClose, onSuccess }) {
     }
   }
 
-  const handleFile = (e) => {
+  const handleFile = async (e) => {
     const f = e.target.files[0]
     if (!f) return
 
@@ -73,9 +79,46 @@ export default function AddIssueModal({ onClose, onSuccess }) {
     }
 
     setError('')
-    setFile(f)
-    setPreview(URL.createObjectURL(f))
-    setMediaType(isVideo ? 'video' : 'image')
+    setCompressionInfo(null)
+
+    // Compress images before setting state
+    if (!isVideo) {
+      setCompressing(true)
+      setCompressionProgress(0)
+
+      try {
+        const result = await compressImage(f, (progress) => {
+          setCompressionProgress(Math.round(progress))
+        })
+
+        setFile(result.file)
+        setPreview(URL.createObjectURL(result.file))
+        setMediaType('image')
+
+        // Show compression savings info
+        if (result.wasCompressed) {
+          const savedPercent = Math.round((1 - result.compressedSize / result.originalSize) * 100)
+          setCompressionInfo({
+            originalSize: result.originalSize,
+            compressedSize: result.compressedSize,
+            savedPercent,
+          })
+        }
+      } catch {
+        // Fallback: use original file if compression completely fails
+        setFile(f)
+        setPreview(URL.createObjectURL(f))
+        setMediaType('image')
+      } finally {
+        setCompressing(false)
+        setCompressionProgress(0)
+      }
+    } else {
+      // Videos pass through unchanged
+      setFile(f)
+      setPreview(URL.createObjectURL(f))
+      setMediaType('video')
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -84,15 +127,15 @@ export default function AddIssueModal({ onClose, onSuccess }) {
     setLoading(true)
     setError('')
     try {
-                const formData = new FormData()
-                formData.append('title', title)
-                formData.append('description', description || '')
-                formData.append('type', type)
-                
-                // Ensure valid non-empty arrays
-                const catsToSubmit = selectedCategories.length > 0 ? selectedCategories : [defaultCategory]
-                formData.append('category', catsToSubmit[0])  // Primary category for legacy field
-                formData.append('categories', JSON.stringify(catsToSubmit))
+      const formData = new FormData()
+      formData.append('title', title)
+      formData.append('description', description || '')
+      formData.append('type', type)
+
+      // Ensure valid non-empty arrays
+      const catsToSubmit = selectedCategories.length > 0 ? selectedCategories : [defaultCategory]
+      formData.append('category', catsToSubmit[0]) // Primary category legacy field
+      formData.append('categories', JSON.stringify(catsToSubmit))
 
       console.log('Publishing payload:', { title, type, catsToSubmit })
 
@@ -159,13 +202,13 @@ export default function AddIssueModal({ onClose, onSuccess }) {
           {isAdmin && (
             <div className="flex flex-col gap-2">
               <p className="text-xs text-gray-400 font-semibold">
-                {t('publish_in')} {t('admins_only')}:
+                {t('publish_in')} ({t('admins_only')})
               </p>
               <div className="flex gap-2">
                 {[
                   { id: 'lab', label: t('labs') },
-                        { id: 'secondary_packaging', label: t('secondary_packaging') },
-                  { id: 'production', label: t('production') }
+                  { id: 'secondary_packaging', label: t('secondary_packaging') },
+                  { id: 'production', label: t('production') },
                 ].map(c => (
                   <button
                     key={c.id}
@@ -197,14 +240,46 @@ export default function AddIssueModal({ onClose, onSuccess }) {
           {/* Media Upload */}
           <div className="flex flex-col gap-2">
             <p className="text-xs text-gray-400 font-semibold">{t('media_attachment')}:</p>
-            <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-200 rounded-xl p-6 cursor-pointer hover:bg-gray-50/50 hover:border-[#00A89B]/30 transition-all duration-200">
-              {preview ? (
-                mediaType === 'video' ? (
-                  <video src={preview} className="w-full h-40 object-cover rounded-lg" controls />
-                ) : (
-                  <img src={preview} className="w-full h-40 object-cover rounded-lg" alt="preview" />
-                )
+            <label className={clsx(
+              "flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-xl p-6 cursor-pointer transition-all duration-200",
+              compressing
+                ? "border-[#00A89B]/40 bg-[#00A89B]/5"
+                : "border-gray-200 hover:bg-gray-50/50 hover:border-[#00A89B]/30"
+            )}>
+              {compressing ? (
+                /* Compression in progress indicator */
+                <div className="flex flex-col items-center gap-3 w-full">
+                  <Loader2 size={28} className="text-[#00A89B] animate-spin" />
+                  <span className="text-sm font-medium text-[#00A89B]">{t('compressing_image')}</span>
+                  <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="h-full bg-[#00A89B] rounded-full transition-all duration-300 ease-out"
+                      style={{ width: `${compressionProgress}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-gray-400">{compressionProgress}%</span>
+                </div>
+              ) : preview ? (
+                /* File preview */
+                <>
+                  {mediaType === 'video' ? (
+                    <video src={preview} className="w-full h-40 object-cover rounded-lg" controls />
+                  ) : (
+                    <img src={preview} className="w-full h-40 object-cover rounded-lg" alt="preview" />
+                  )}
+                  {/* Compression savings badge */}
+                  {compressionInfo && (
+                    <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg text-xs font-medium">
+                      <span>&#x2714;</span>
+                      <span>
+                        {t('compressed')}: {formatFileSize(compressionInfo.originalSize)} &rarr; {formatFileSize(compressionInfo.compressedSize)}
+                        {' '}({t('saved')} {compressionInfo.savedPercent}%)
+                      </span>
+                    </div>
+                  )}
+                </>
               ) : (
+                /* Default upload prompt */
                 <>
                   <div className="flex gap-3 text-gray-300">
                     <ImageIcon size={24} />
@@ -213,6 +288,7 @@ export default function AddIssueModal({ onClose, onSuccess }) {
                   <span className="text-sm text-gray-400">{t('upload_image_video')}</span>
                 </>
               )}
+
               <input type="file" accept="image/jpeg,image/jpg,image/png,image/webp,video/mp4,video/quicktime" className="hidden" onChange={handleFile} />
             </label>
             <p className="text-xs text-gray-300 -mt-1">
@@ -226,7 +302,7 @@ export default function AddIssueModal({ onClose, onSuccess }) {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || compressing}
             className="w-full bg-[#00A89B] text-white py-3 rounded-xl font-semibold hover:bg-[#00A89B]/90 transition-all duration-200 disabled:opacity-50 active:scale-[0.98] shadow-md shadow-[#00A89B]/20"
           >
             {loading ? t('loading') : t('publish')}

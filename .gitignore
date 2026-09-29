@@ -22,3 +22,9 @@ backend/
 !.vscode/extensions.json
 .idea/
 .DS_Store
+
+# =========================
+# Secrets & Credentials
+# =========================
+drive/credentials.json
+drive/token.json
