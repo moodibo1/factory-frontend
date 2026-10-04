@@ -10,7 +10,7 @@ export async function apiRequest(endpoint, options = {}) {
   const token = localStorage.getItem('token')
   const headers = {
     'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(token ? { Authorization: 'Bearer ' + token } : {}),
     ...options.headers,
   }
 
@@ -82,7 +82,7 @@ export const issuesService = {
         const token = localStorage.getItem('token')
         const res = await fetch(`${BASE_URL}/issues/`, {
             method: 'POST',
-            headers: { Authorization: `Bearer ${token}` },
+            headers: { Authorization: 'Bearer ' + token },
             body: formData,
         })
         if (!res.ok) throw new Error('فشل إنشاء الإشكالية')
@@ -132,7 +132,7 @@ export const dashboardService = {
     const q = params.toString() ? `?${params.toString()}` : ''
 
     const res = await fetch(`${BASE_URL}/dashboard/export${q}`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: 'Bearer ' + token }
     })
     if (!res.ok) throw new Error('Export failed')
     const blob = await res.blob()
@@ -169,6 +169,52 @@ export const notificationsService = {
   },
   async generateSmartAlerts() {
     return apiRequest('/notifications/generate-smart-alerts', { method: 'POST' })
+  },
+}
+
+export const reportsService = {
+  async getMonthlyReports(filters = {}) {
+    const params = new URLSearchParams()
+    if (filters.department) params.append('department', filters.department)
+    if (filters.year) params.append('year', String(filters.year))
+    if (filters.month) params.append('month', String(filters.month))
+    const query = params.toString() ? `?${params.toString()}` : ''
+    return apiRequest(`/reports/monthly${query}`)
+  },
+
+  async generateMonthlyBatch(year, month) {
+    const params = new URLSearchParams()
+    if (year) params.append('year', String(year))
+    if (month) params.append('month', String(month))
+    const query = params.toString() ? `?${params.toString()}` : ''
+    return apiRequest(`/reports/generate-monthly-batch${query}`, { method: 'POST' })
+  },
+
+  async customExport({ department, startDate, endDate, language = 'ar' }) {
+    const token = localStorage.getItem('token')
+    const res = await fetch(`${BASE_URL}/reports/custom-export`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: 'Bearer ' + token } : {}),
+      },
+      body: JSON.stringify({ department, start_date: startDate, end_date: endDate, language }),
+    })
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ detail: 'Export failed' }))
+      throw new Error(error.detail || 'Export failed')
+    }
+
+    const blob = await res.blob()
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `dossier_${department}_${startDate}_to_${endDate}.pdf`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    window.URL.revokeObjectURL(url)
   },
 }
 
