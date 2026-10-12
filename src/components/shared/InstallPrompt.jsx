@@ -3,6 +3,7 @@ import { Download, Share, X } from 'lucide-react'
 import './InstallPrompt.css'
 
 const DISMISSED_KEY = 'd1-install-prompt-dismissed'
+const DO_NOT_SHOW_KEY = 'd1-install-prompt-do-not-show'
 
 function isStandalone() {
   return window.matchMedia?.('(display-mode: standalone)').matches
@@ -21,6 +22,13 @@ export default function InstallPrompt() {
   const [dismissed, setDismissed] = useState(() => {
     try {
       return window.sessionStorage.getItem(DISMISSED_KEY) === 'true'
+    } catch {
+      return false
+    }
+  })
+  const [doNotShowAgain, setDoNotShowAgain] = useState(() => {
+    try {
+      return window.localStorage.getItem(DO_NOT_SHOW_KEY) === 'true'
     } catch {
       return false
     }
@@ -55,6 +63,15 @@ export default function InstallPrompt() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!showIosInstructions) return undefined
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setShowIosInstructions(false)
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [showIosInstructions])
+
   const isArabic = language === 'ar'
   const canInstall = Boolean(deferredPrompt) || ios
   const content = useMemo(() => isArabic
@@ -64,8 +81,14 @@ export default function InstallPrompt() {
       install: 'تثبيت',
       later: 'لاحقاً',
       iosTitle: 'تثبيت ديوان على iPhone',
-      iosBody: 'اضغط مشاركة في Safari، ثم اختر «إضافة إلى الشاشة الرئيسية».',
+      iosSteps: [
+        'اضغط على زر المشاركة (Share icon ⎋) في شريط Safari بالأسفل.',
+        'مرر القائمة واختر "إضافة إلى الشاشة الرئيسية" (Add to Home Screen).',
+        'اضغط على "إضافة" (Add) في الزاوية العلوية.',
+      ],
       understood: 'فهمت',
+      doNotShow: 'لا تظهر هذه الرسالة مرة أخرى',
+      close: 'إغلاق',
     }
     : {
       title: 'Install D1',
@@ -73,11 +96,17 @@ export default function InstallPrompt() {
       install: 'Install',
       later: 'Not now',
       iosTitle: 'Install D1 on iPhone',
-      iosBody: 'Tap Share in Safari, then choose “Add to Home Screen”.',
+      iosSteps: [
+        'Tap the Share button in the Safari toolbar at the bottom.',
+        'Scroll the menu and choose “Add to Home Screen”.',
+        'Tap “Add” in the upper corner.',
+      ],
       understood: 'Got it',
+      doNotShow: 'Do not show this again',
+      close: 'Close',
     }, [isArabic])
 
-  if (installed || dismissed || !canInstall) return null
+  if (installed || dismissed || doNotShowAgain || !canInstall) return null
 
   const dismiss = () => {
     setDismissed(true)
@@ -86,6 +115,21 @@ export default function InstallPrompt() {
     } catch {
       // Session storage may be unavailable in private browsing.
     }
+  }
+
+  const toggleDoNotShowAgain = (event) => {
+    const checked = event.target.checked
+    setDoNotShowAgain(checked)
+    try {
+      if (checked) {
+        window.localStorage.setItem(DO_NOT_SHOW_KEY, 'true')
+      } else {
+        window.localStorage.removeItem(DO_NOT_SHOW_KEY)
+      }
+    } catch {
+      // Local storage may be unavailable in private browsing.
+    }
+    if (checked) dismiss()
   }
 
   const install = async () => {
@@ -119,6 +163,10 @@ export default function InstallPrompt() {
             <X size={18} aria-hidden="true" />
           </button>
         </div>
+        <label className="install-prompt__preference">
+          <input type="checkbox" checked={doNotShowAgain} onChange={toggleDoNotShowAgain} />
+          <span>{content.doNotShow}</span>
+        </label>
       </aside>
 
       {showIosInstructions && (
@@ -131,12 +179,14 @@ export default function InstallPrompt() {
             dir="rtl"
             onClick={(event) => event.stopPropagation()}
           >
-            <button type="button" className="install-prompt__close" onClick={() => setShowIosInstructions(false)} aria-label={content.later}>
+            <button type="button" className="install-prompt__close" onClick={() => setShowIosInstructions(false)} aria-label={content.close}>
               <X size={18} aria-hidden="true" />
             </button>
             <Share size={28} className="install-modal__icon" aria-hidden="true" />
             <h2 id="install-modal-title">{content.iosTitle}</h2>
-            <p>{content.iosBody}</p>
+            <ol className="install-modal__steps">
+              {content.iosSteps.map((step) => <li key={step}>{step}</li>)}
+            </ol>
             <button type="button" className="install-prompt__primary" onClick={() => { setShowIosInstructions(false); dismiss() }}>
               {content.understood}
             </button>
