@@ -1,0 +1,104 @@
+.install-prompt {
+  position: fixed;
+  z-index: 60;
+  inset-inline: 1rem;
+  bottom: calc(4.75rem + env(safe-area-inset-bottom));
+  max-width: 34rem;
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  color: #f8fafc;
+  background: rgba(30, 41, 59, 0.96);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 1rem;
+  box-shadow: 0 14px 35px rgba(15, 23, 42, 0.22);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.install-prompt__copy {
+  min-width: 0;
+  display: grid;
+  gap: 0.15rem;
+  flex: 1;
+}
+
+.install-prompt__copy strong { font-size: 0.9rem; }
+.install-prompt__copy span { color: #cbd5e1; font-size: 0.75rem; line-height: 1.4; }
+.install-prompt__actions { display: flex; align-items: center; gap: 0.45rem; flex-shrink: 0; }
+.install-prompt button { font: inherit; cursor: pointer; }
+.install-prompt__primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 0;
+  border-radius: 0.65rem;
+  padding: 0.55rem 0.75rem;
+  color: #0f172a;
+  background: #2dd4bf;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.install-prompt__primary:hover { background: #5eead4; }
+.install-prompt__dismiss, .install-prompt__close {
+  border: 0;
+  color: #cbd5e1;
+  background: transparent;
+}
+.install-prompt__preference {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  color: #cbd5e1;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+.install-prompt__preference input { accent-color: #2dd4bf; }
+.install-prompt__dismiss { padding: 0.35rem; font-size: 0.72rem; }
+.install-prompt__close { display: inline-flex; padding: 0.25rem; }
+.install-prompt__dismiss:hover, .install-prompt__close:hover { color: white; }
+
+.install-modal-backdrop {
+  position: fixed;
+  z-index: 70;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.5);
+}
+.install-modal {
+  position: relative;
+  width: min(100%, 23rem);
+  padding: 1.5rem;
+  color: #0f172a;
+  background: white;
+  border-radius: 1.25rem;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.3);
+  text-align: center;
+}
+.install-modal .install-prompt__close { position: absolute; top: 0.7rem; inset-inline-end: 0.7rem; color: #64748b; }
+.install-modal__icon { color: #00a89b; margin: 0 auto 0.75rem; }
+.install-modal h2 { margin: 0 0 0.5rem; font-size: 1.1rem; }
+.install-modal__steps {
+  margin: 0 0 1.25rem;
+  padding-inline-start: 1.5rem;
+  color: #475569;
+  font-size: 0.88rem;
+  line-height: 1.7;
+  text-align: start;
+}
+.install-modal__steps li { padding-inline-start: 0.25rem; }
+
+@media (min-width: 640px) {
+  .install-prompt { bottom: 1rem; }
+}
+@media (max-width: 420px) {
+  .install-prompt { flex-wrap: wrap; }
+  .install-prompt { align-items: flex-start; }
+  .install-prompt__actions { flex-wrap: wrap; justify-content: flex-end; }
+  .install-prompt__dismiss { order: 3; width: 100%; text-align: end; }
+}
