@@ -102,25 +102,94 @@ export default function IssueCard({ issue, onUpdate, style }) {
 
   const handlePrint = () => {
     const printWindow = window.open('', '_blank')
+    const mediaHtml = mediaUrl ? `<div style="margin-top: 20px; text-align: center;"><img src="${mediaUrl}" style="max-width: 100%; max-height: 300px; border-radius: 8px;" alt="Attachment" /></div>` : ''
+    const commentsHtml = comments.length > 0 ? `
+      <div style="margin-top: 30px; border-top: 2px solid #e2e8f0; padding-top: 20px;">
+        <h3 style="color: #0f172a; margin-bottom: 15px;">${t('comments')}</h3>
+        ${comments.map(c => `
+          <div style="margin-bottom: 15px; padding: 12px; background: #f1f5f9; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+              <strong style="color: #0f172a;">${c.user_name || c.author?.name || t('unknown')}</strong>
+              <span style="font-size: 12px; color: #64748b;">${formatFullDate(c.created_at) || '-'}</span>
+            </div>
+            <p style="color: #475569; font-size: 14px; line-height: 1.5; white-space: pre-wrap;">${c.text}</p>
+          </div>
+        `).join('')}
+      </div>
+    ` : ''
+
     const printContent = `
-      <!DOCTYPE html>
-      <html dir="rtl" lang="ar">
-      <head>
-        <meta charset="UTF-8">
-        <title>${t('print')} - ${issue.title}</title>
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: sans-serif; padding: 40px; }
-          .issue-container { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 30px; }
-        </style>
-      </head>
-      <body>
-        <div class="issue-container">
-          <h1>${issue.title}</h1>
-          <p>${issue.description}</p>
-        </div>
-      </body>
-      </html>
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>${t('print_issue')} - ${issue.title}</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { background: white; color: #0f172a; }
+body { font-family: 'Segoe UI', sans-serif; padding: 20px; line-height: 1.6; }
+@media print {
+  body { padding: 0; }
+  .no-print { display: none !important; }
+  .issue-container { page-break-inside: avoid; }
+  .comment { page-break-inside: avoid; }
+  img { max-width: 100% !important; page-break-inside: avoid; }
+}
+.header { margin-bottom: 20px; }
+.title { font-size: 24px; font-weight: bold; color: #0f172a; margin-bottom: 10px; }
+.metadata { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 15px 0; }
+.meta-item { background: #f8fafc; padding: 10px; border-radius: 6px; font-size: 13px; }
+.meta-label { font-weight: 600; color: #64748b; margin-bottom: 3px; }
+.meta-value { color: #0f172a; }
+.badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-right: 8px; }
+.badge-open { background: #d4edda; color: #155724; }
+.badge-closed { background: #d1ecf1; color: #0c5460; }
+.badge-in-progress { background: #fff3cd; color: #856404; }
+.badge-reopened { background: #f8d7da; color: #721c24; }
+.problem { background: #fef3c7; color: #92400e; }
+.note { background: #dbeafe; color: #1e40af; }
+.emergency { background: #fee2e2; color: #991b1b; }
+.description { margin: 20px 0; padding: 15px; background: #f1f5f9; border-radius: 8px; line-height: 1.7; white-space: pre-wrap; }
+.timeline { margin: 20px 0; padding-left: 20px; border-left: 3px solid #00a89b; }
+.timeline-item { margin-bottom: 12px; font-size: 13px; color: #475569; }
+h3 { color: #0f172a; margin: 20px 0 15px; font-size: 16px; }
+</style>
+</head>
+<body>
+<div class="issue-container">
+  <div class="header">
+    <div class="title">${issue.title}</div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <span class="badge badge-${issue.status}">${statusInfo.label}</span>
+      <span class="badge ${issue.type === 'problem' ? 'problem' : issue.type === 'emergency' ? 'emergency' : 'note'}">${typeInfo.label}</span>
+    </div>
+  </div>
+
+  <div class="metadata">
+    <div class="meta-item">
+      <div class="meta-label">${t('category')}</div>
+      <div class="meta-value">${issue.category?.replace('_', ' ').charAt(0).toUpperCase() + issue.category?.slice(1).replace('_', ' ') || '-'}</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">${t('unknown')}</div>
+      <div class="meta-value">${issue.creator?.name || t('unknown')}</div>
+    </div>
+  </div>
+
+  <div class="description">${issue.description || '-'}</div>
+
+  ${mediaHtml}
+
+  <div class="timeline">
+    <div class="timeline-item"><strong>${t('opened_at')}:</strong> ${formatFullDate(issue.created_at) || '-'}</div>
+    ${issue.in_progress_at ? `<div class="timeline-item"><strong>${t('moved_to_progress')}:</strong> ${formatFullDate(issue.in_progress_at)} (${formatDuration(issue.created_at, issue.in_progress_at)})</div>` : ''}
+    ${issue.closed_at ? `<div class="timeline-item"><strong>${t('closed_at_label')}:</strong> ${formatFullDate(issue.closed_at)} (${formatDuration(issue.in_progress_at || issue.created_at, issue.closed_at)})</div>` : ''}
+  </div>
+
+  ${commentsHtml}
+</div>
+</body>
+</html>
     `
     printWindow.document.write(printContent)
     printWindow.document.close()

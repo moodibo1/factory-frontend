@@ -229,6 +229,11 @@ const resources = {
       security_warning: '⚠️ تحذير أمني',
       security_message: 'لا يُسمح بالتقاط لقطات الشاشة أو طباعة المحتوى. هذا النظام خاضع للمراقبة.',
       understood: 'فهمت',
+
+      //iOS PWA Install ───────────────────────────────────────
+      ios_install_title: 'إضافة D1 للشاشة الرئيسية',
+      ios_install_instructions: 'قم بتثبيت D1 على شاشتك الرئيسية للوصول السريع والتجربة الأفضل.',
+      ios_install_dismiss: 'ليس الآن',
     },
   },
 
@@ -458,6 +463,11 @@ const resources = {
       security_warning: '⚠️ Security Warning',
       security_message: 'Screenshots and printing are not permitted. This system is monitored.',
       understood: 'Understood',
+
+      //iOS PWA Install ───────────────────────────────────────
+      ios_install_title: 'Add D1 to Home Screen',
+      ios_install_instructions: 'Install D1 to your home screen for quick access and better experience.',
+      ios_install_dismiss: 'Not now',
     },
   },
 
@@ -687,6 +697,11 @@ const resources = {
       security_warning: '⚠️ Güvenlik Uyarısı',
       security_message: 'Ekran görüntüsü alma ve yazdırma yasaktır. Bu sistem izlenmektedir.',
       understood: 'Anladım',
+
+      //iOS PWA Install ───────────────────────────────────────
+      ios_install_title: 'Ana Ekrana Ekle',
+      ios_install_instructions: 'Hızlı erişim ve daha iyi deneyim için D1\'i ana ekranınıza yükleyin.',
+      ios_install_dismiss: 'Şimdi değil',
     },
   },
 }
