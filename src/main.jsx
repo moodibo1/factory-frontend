@@ -7,6 +7,7 @@ import { IssuesProvider } from '@/store/IssuesContext'
 import { AuthProvider } from '@/store/AuthContext'
 import IOSInstallPrompt from '@/components/shared/IOSInstallPrompt'
 import InstallPrompt from '@/components/shared/InstallPrompt'
+import PWASplash from '@/components/shared/PWASplash'
 import './i18n'
 import './index.css'
 
@@ -23,6 +24,7 @@ createRoot(document.getElementById('root')).render(
     <ThemeProvider>
       <AuthProvider>
         <IssuesProvider>
+          <PWASplash />
           <IOSInstallPrompt />
           <InstallPrompt />
           <RouterProvider router={router} />
