@@ -262,15 +262,15 @@ h3 { color: #0f172a; margin: 20px 0 15px; font-size: 16px; }
 
   return (
     <>
-  <div
-    className={clsx(
-      'group relative rounded-2xl bg-white dark:bg-[#1c1c1e] border border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.12)] transition-all duration-300',
-      'hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)]',
-      'active:scale-[0.98]',
-      isEmergency ? 'border-red-200/60 dark:border-red-900/60 d1-pulse-ring shadow-md' : 'shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)]'
-    )}
-    style={style}
-  >
+      <div
+        className={clsx(
+        'group relative rounded-2xl bg-white border transition-all duration-300',
+        'hover:-translate-y-1 hover:shadow-xl hover:shadow-black/[0.06] hover:border-gray-300',
+        'active:scale-[0.99]',
+        isEmergency ? 'border-red-200/60 d1-pulse-ring shadow-md' : 'border-gray-200 shadow-md'
+        )}
+        style={style}
+      >
         {/* Emergency top accent bar */}
         {isEmergency && (
           <div className="h-1 w-full bg-gradient-to-r from-red-500 via-red-400 to-orange-400 rounded-t-2xl" />
