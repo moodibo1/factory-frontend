@@ -92,7 +92,7 @@ export default function IOSInstructions() {
             webkit-playsinline="true"
             className="absolute inset-0 w-full h-full object-cover"
           >
-            <source src="/splash-video.mp4" type="video/mp4" />
+            <source src="/splash-video" type="video/mp4" />
           </video>
           
           {/* Fallback if video doesn't load */}
