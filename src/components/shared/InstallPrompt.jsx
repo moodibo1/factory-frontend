@@ -12,9 +12,13 @@ function isStandalone() {
 
 function isIosSafari() {
   const userAgent = window.navigator.userAgent
-  return /iphone|ipad|ipod/i.test(userAgent)
-    && /safari/i.test(userAgent)
-    && !/crios|fxios|opios|edgios/i.test(userAgent)
+  return /iphone|ipad|ipod/i.test(userAgent) &&
+    /safari/i.test(userAgent) &&
+    !/crios|fxios|opios|edgios/i.test(userAgent)
+}
+
+function isAndroid() {
+  return /android/i.test(navigator.userAgent)
 }
 
 export default function InstallPrompt() {
@@ -36,7 +40,11 @@ export default function InstallPrompt() {
   const [showIosInstructions, setShowIosInstructions] = useState(false)
   const [installed, setInstalled] = useState(isStandalone)
   const [ios] = useState(isIosSafari)
+  const [android] = useState(isAndroid)
   const [language, setLanguage] = useState(document.documentElement.lang?.substring(0, 2) || 'ar')
+  
+  // Early return for iOS - don't show anything on iOS (IOSInstructions component handles it)
+  if (ios) return null
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (event) => {

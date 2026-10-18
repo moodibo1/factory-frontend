@@ -26,13 +26,15 @@ export default function PWASplash() {
   if (!show) return null
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-[#00A89B] flex items-center justify-center animate-in fade-in duration-500">
+    <div className="fixed inset-0 z-[10000] bg-[#00A89B] flex items-center justify-center animate-in fade-in duration-500">
       {/* Video placeholder - Replace with your own video */}
       <video
         autoPlay
         loop
         muted
         playsInline
+        webkit-playsinline="true"
+        x-webkit-airplay="deny"
         className="absolute inset-0 w-full h-full object-cover"
         poster="/splash-poster.jpg"
       >

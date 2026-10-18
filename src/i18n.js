@@ -234,6 +234,12 @@ const resources = {
       ios_install_title: 'إضافة D1 للشاشة الرئيسية',
       ios_install_instructions: 'قم بتثبيت D1 على شاشتك الرئيسية للوصول السريع والتجربة الأفضل.',
       ios_install_dismiss: 'ليس الآن',
+      ios_instructions_title: 'إضافة D1 للشاشة الرئيسية',
+      ios_instructions_body: 'للحصول على تجربة أفضل، قم بإضافة D1 إلى شاشتك الرئيسية',
+      ios_step_share: 'اضغط على زر المشاركة ⎋',
+      ios_step_add_home: 'اختر "إضافة إلى الشاشة الرئيسية"',
+      do_not_show_again: 'لا تظهر هذه الرسالة مرة أخرى',
+      got_it: 'فهمت',
     },
   },
 
@@ -468,6 +474,12 @@ const resources = {
       ios_install_title: 'Add D1 to Home Screen',
       ios_install_instructions: 'Install D1 to your home screen for quick access and better experience.',
       ios_install_dismiss: 'Not now',
+      ios_instructions_title: 'Add D1 to Home Screen',
+      ios_instructions_body: 'For the best experience, add D1 to your home screen',
+      ios_step_share: 'Tap the Share button ⎋',
+      ios_step_add_home: 'Select "Add to Home Screen"',
+      do_not_show_again: 'Don\'t show this again',
+      got_it: 'Got it',
     },
   },
 
@@ -702,19 +714,44 @@ const resources = {
       ios_install_title: 'Ana Ekrana Ekle',
       ios_install_instructions: 'Hızlı erişim ve daha iyi deneyim için D1\'i ana ekranınıza yükleyin.',
       ios_install_dismiss: 'Şimdi değil',
+      ios_instructions_title: 'Ana Ekrana Ekle',
+      ios_instructions_body: 'En iyi deneyim için D1\'i ana ekranınıza ekleyin',
+      ios_step_share: 'Paylaş düğmesine dokunun ⎋',
+      ios_step_add_home: '"Ana Ekrana Ekle" seçeneğini seçin',
+      do_not_show_again: 'Bir daha gösterme',
+      got_it: 'Anladım',
     },
   },
 }
 
+// Custom language detector: prioritize device language on first visit
+const customLanguageDetector = {
+  type: 'languageDetector',
+  detect: () => {
+    // 1. Check localStorage (user's manual choice takes priority)
+    const stored = localStorage.getItem('i18nextLng')
+    if (stored) return stored
+    
+    // 2. Detect device language
+    const deviceLang = navigator.language || navigator.userLanguage || 'en'
+    const langCode = deviceLang.toLowerCase().startsWith('ar') ? 'ar' : 'en'
+    return langCode
+  },
+  init: () => {},
+  cacheUserLanguage: (lng) => {
+    localStorage.setItem('i18nextLng', lng)
+  },
+}
+
 i18n
+  .use(customLanguageDetector)
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources,
-    fallbackLng: 'ar',
-    lng: 'ar',
+    fallbackLng: 'en',
     detection: {
-      order: ['localStorage', 'navigator'],
+      order: ['localStorage', 'navigator', 'htmlTag'],
       caches: ['localStorage'],
     },
     interpolation: {
