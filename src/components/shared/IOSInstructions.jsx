@@ -78,11 +78,34 @@ export default function IOSInstructions() {
             <div className="flex-1 text-xs text-gray-500">
               <span className="font-semibold text-gray-700">2.</span> {t('ios_step_add_home')}
             </div>
+        </div>
+      </div>
+
+      {/* Video Section - Below instructions */}
+      <div className="px-4 pb-4">
+        <div className="relative w-full aspect-video bg-gradient-to-br from-[#00A89B] to-[#007B6E] rounded-xl overflow-hidden">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            webkit-playsinline="true"
+            className="absolute inset-0 w-full h-full object-cover"
+          >
+            <source src="/splash-video.mp4" type="video/mp4" />
+          </video>
+          
+          {/* Fallback if video doesn't load */}
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#00A89B]/90 to-[#007B6E]/90">
+            <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-xl animate-pulse">
+              <span className="text-white font-black text-2xl">D1</span>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Checkbox + Close button */}
-        <div className="p-4 border-t border-gray-100 bg-gray-50 space-y-3">
+      {/* Checkbox + Close button */}
+      <div className="p-4 border-t border-gray-100 bg-gray-50 space-y-3">
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
