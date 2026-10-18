@@ -37,7 +37,7 @@ export default function IOSInstructions() {
   if (!show) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center p-4 bg-black/40 animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[10001] flex items-end justify-center p-4 bg-black/40 animate-in fade-in duration-300">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-5">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gradient-to-br from-[#00A89B]/5 to-white">
