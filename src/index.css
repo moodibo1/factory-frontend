@@ -4,58 +4,83 @@
 @import "@fontsource-variable/geist";
 
 :root {
-  --background: #f8fafc; /* Slate-50 */
-  --foreground: #0f172a;
+  /* Apple-inspired High Contrast Colors */
+  --background: #ffffff;
+  --foreground: #000000;
   --primary: #00A89B;
   --card: #FFFFFF;
-  /* D1 Design Tokens */
+  
+  /* D1 Design Tokens - Refined for Apple aesthetic */
   --d1-teal: #00A89B;
+  --d1-teal-hover: #008B80;
+  --d1-teal-light: #E6F7F5;
   --d1-teal-glow: #00D4C8;
-  --d1-slate: #0F172A;
-  --d1-surface: #F8FAFC;
-  --d1-glass: rgba(255, 255, 255, 0.72);
+  
+  /* High Contrast Text (Apple-style) */
+  --text-primary: #000000;      /* Pure black for headlines */
+  --text-secondary: #1d1d1f;    /* Near-black for body */
+  --text-tertiary: #86868b;     /* Gray for captions */
+  --text-quaternary: #d2d2d7;   /* Light gray for disabled */
+  
+  /* Refined Backgrounds */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f7;      /* Apple's signature gray */
+  --bg-tertiary: #fafafa;
+  
+  /* Hairline Borders (Apple-style) */
+  --border-light: rgba(0, 0, 0, 0.04);
+  --border-medium: rgba(0, 0, 0, 0.08);
+  --border-heavy: rgba(0, 0, 0, 0.12);
+  
+  /* Legacy tokens (preserve compatibility) */
+  --d1-slate: #1d1d1f;
+  --d1-surface: #f5f5f7;
+  --d1-glass: rgba(255, 255, 255, 0.8);
   --d1-ember: #EF4444;
 }
 
 @layer base {
   body {
-    @apply bg-slate-50 text-gray-900 selection:bg-teal-100;
+    @apply bg-white dark:bg-black text-[#1d1d1f] dark:text-[#f5f5f7] selection:bg-[#E6F7F5] dark:selection:bg-[rgba(0,212,200,0.3)];
   }
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-  --d1-glass: rgba(30, 30, 30, 0.72);
+  /* Dark Mode - Apple-inspired High Contrast */
+  --background: #000000;
+  --foreground: #ffffff;
+  --card: #1c1c1e;
+  --card-foreground: #ffffff;
+  --popover: #1c1c1e;
+  --popover-foreground: #ffffff;
+  --primary: #00D4C8;
+  --primary-foreground: #000000;
+  --secondary: #2c2c2e;
+  --secondary-foreground: #ffffff;
+  --muted: #2c2c2e;
+  --muted-foreground: #98989d;
+  --accent: #2c2c2e;
+  --accent-foreground: #ffffff;
+  --destructive: #ff453a;
+  --border: rgba(255, 255, 255, 0.12);
+  --input: rgba(255, 255, 255, 0.15);
+  --ring: #00D4C8;
+  
+  /* D1 Dark Mode Tokens */
+  --d1-teal: #00D4C8;
+  --d1-teal-hover: #00F5E5;
+  --d1-teal-light: rgba(0, 212, 200, 0.15);
+  --text-primary: #ffffff;
+  --text-secondary: #f5f5f7;
+  --text-tertiary: #98989d;
+  --text-quaternary: #636366;
+  --bg-primary: #000000;
+  --bg-secondary: #1c1c1e;
+  --bg-tertiary: #2c2c2e;
+  --border-light: rgba(255, 255, 255, 0.04);
+  --border-medium: rgba(255, 255, 255, 0.08);
+  --border-heavy: rgba(255, 255, 255, 0.12);
+  --d1-glass: rgba(28, 28, 30, 0.8);
 }
 
 @theme inline {
