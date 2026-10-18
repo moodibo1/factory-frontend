@@ -37,10 +37,31 @@ export default function IOSInstructions() {
   if (!show) return null
 
   return (
-    <div className="fixed inset-0 z-[10001] flex items-end justify-center p-4 bg-black/40 animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[10001] flex items-end justify-center p-4 bg-black/60 animate-in fade-in duration-300">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-5">
+        {/* Video Header - Embedded at top of modal */}
+        <div className="relative w-full aspect-video bg-gradient-to-br from-[#00A89B] to-[#007B6E] overflow-hidden">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            webkit-playsinline="true"
+            className="absolute inset-0 w-full h-full object-cover"
+          >
+            <source src="/splash-video.mp4" type="video/mp4" />
+          </video>
+          
+          {/* Fallback gradient overlay if video doesn't exist */}
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#00A89B]/90 to-[#007B6E]/90">
+            <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-xl animate-pulse">
+              <span className="text-white font-black text-2xl">D1</span>
+            </div>
+          </div>
+        </div>
+
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gradient-to-br from-[#00A89B]/5 to-white">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#00A89B] flex items-center justify-center shadow-sm">
               <span className="text-white font-black text-lg">D1</span>
